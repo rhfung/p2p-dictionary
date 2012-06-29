@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CameraSource", "CameraSource\CameraSource.csproj", "{C89CC074-8D86-452F-A987-62790FB3113F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CameraReceiver", "CameraReceiver\CameraReceiver.csproj", "{73C6BE2A-BD93-45BE-BFB9-578F6DDF2A60}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C89CC074-8D86-452F-A987-62790FB3113F}.Debug|x86.ActiveCfg = Debug|x86
+		{C89CC074-8D86-452F-A987-62790FB3113F}.Debug|x86.Build.0 = Debug|x86
+		{C89CC074-8D86-452F-A987-62790FB3113F}.Release|x86.ActiveCfg = Release|x86
+		{C89CC074-8D86-452F-A987-62790FB3113F}.Release|x86.Build.0 = Release|x86
+		{73C6BE2A-BD93-45BE-BFB9-578F6DDF2A60}.Debug|x86.ActiveCfg = Debug|x86
+		{73C6BE2A-BD93-45BE-BFB9-578F6DDF2A60}.Debug|x86.Build.0 = Debug|x86
+		{73C6BE2A-BD93-45BE-BFB9-578F6DDF2A60}.Release|x86.ActiveCfg = Release|x86
+		{73C6BE2A-BD93-45BE-BFB9-578F6DDF2A60}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

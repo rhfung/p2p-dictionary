@@ -10,6 +10,9 @@ public class TestRun {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+			System.out.println("Server started on port 3333");
+			System.out.println("Open your web browser to http://localhost:3333 and verify that dictionary entries\nare properly served from the P2P Dictionary server");
+		
 			P2PDictionary node = new P2PDictionary("test", 3333, "test", P2PDictionaryServerMode.AutoRegister, P2PDictionaryClientMode.AutoConnect, 1500);
 			
 			node.setDebugBuffer(new PrintStream(System.out), 0,true );
@@ -30,8 +33,8 @@ public class TestRun {
 			node.put(Integer.toString(node.getLocalID()) + "/message3", byteArray);
 			node.put(Integer.toString(node.getLocalID()) + "/message4", 3210);
 			node.put(Integer.toString(node.getLocalID()) + "/message5", null);
-			node.put(Integer.toString(node.getLocalID()) + "/message5", true);
-			node.put(Integer.toString(node.getLocalID()) + "/message6", toSend);
+			node.put(Integer.toString(node.getLocalID()) + "/message6", true);
+			node.put(Integer.toString(node.getLocalID()) + "/message7", toSend);
 
 			Scanner sc = new Scanner(System.in);
 			sc.nextLine();

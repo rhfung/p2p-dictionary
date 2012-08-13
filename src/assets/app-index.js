@@ -1,20 +1,5 @@
 // http://www.matlus.com/html5-file-upload-with-progress/
 
-function fileFromJSON(k)
-{
-	if (k instanceof P2PFile)
-		return k;
-		
-	var f = new P2PFile();
-	f.pathname = k.key;
-	f.name =  k.key.substring(k.key.lastIndexOf("/") + 1);
-	f.owner = k.owner;
-	f.revision = k.revision;
-	f.type = k.type;
-	f.status = k.status;
-	
-	return f;
-}
 
 /*
 function uploadComplete(evt) {
@@ -32,6 +17,7 @@ alert("The upload has been canceled by the user or the browser dropped the conne
 }*/
 
 // main view
+$(document).ready( function() {
 (function ($) {
 	var EventBus = _.extend({}, Backbone.Events);
 
@@ -66,9 +52,6 @@ alert("The upload has been canceled by the user or the browser dropped the conne
 		},
 		methodRefresh: function() {
 			$("#refreshlist").attr("disabled","disabled");
-			/*jQuery.getJSON("/data", "json", function (data) {
-				EventBus.trigger("newmodel", data);
-			});*/
 			
 			jQuery.ajax(
 				{
@@ -104,7 +87,7 @@ alert("The upload has been canceled by the user or the browser dropped the conne
 					
 					for (var i in data.keys) {
 						var k = data.keys[i];
-						var f = fileFromJSON(k);
+						var f = this.fileFromJSON(k);
 						this.collection.add(f);
 					} // endfor
 				}//endif
@@ -118,7 +101,7 @@ alert("The upload has been canceled by the user or the browser dropped the conne
 			$('#filelist', this.el).empty();
 		},
 		updateOneItem: function(data) {
-			var file = fileFromJSON(data);
+			var file = this.fileFromJSON(data);
 			if (!_.any(this.collection.models, function (test) { return file.name == test.name; } ))
 				this.collection.add(file );
 			// else do some refresh??
@@ -178,7 +161,23 @@ alert("The upload has been canceled by the user or the browser dropped the conne
 				}
 			});
 		
+		},
+		fileFromJSON: function(k)
+		{
+			if (k instanceof P2PFile)
+				return k;
+				
+			var f = new P2PFile();
+			f.pathname = k.key;
+			f.name =  k.key.substring(k.key.lastIndexOf("/") + 1);
+			f.owner = k.owner;
+			f.revision = k.revision;
+			f.type = k.type;
+			f.status = k.status;
+			
+			return f;
 		}
+
 	});
 
 	AppView = Backbone.View.extend({
@@ -236,3 +235,4 @@ alert("The upload has been canceled by the user or the browser dropped the conne
 	var filesview = new FilesView();
 
 })(jQuery);
+});

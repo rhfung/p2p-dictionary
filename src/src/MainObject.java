@@ -11,24 +11,27 @@ import com.rhfung.P2PDictionary.P2PDictionaryServerMode;
 public class MainObject {
 	public static final void main(String[] args)
 	{
+		System.out.println("Starting server on port 8765...");
+		
 		P2PDictionary dict = new P2PDictionary("Local File Transfer", 8765, "lft", P2PDictionaryServerMode.AutoRegister,
 				P2PDictionaryClientMode.AutoConnect, 1500);
 		
 		dict.setDebugBuffer(System.out, 1, true);
 		dict.setDefaultKey("index.html");
 		dict.put("index.html", new com.rhfung.P2PDictionary.MIMEByteObject("text/html", getFileInPackage("/app-index.html")));
+		dict.put("app-index.js", new com.rhfung.P2PDictionary.MIMEByteObject("text/html", getFileInPackage("/app-index.js")));
 		dict.put("backbone.js", new com.rhfung.P2PDictionary.MIMEByteObject("application/javascript", getFileInPackage("/backbone.js")));
 		dict.put("format.css", new com.rhfung.P2PDictionary.MIMEByteObject("text/css", getFileInPackage("/format.css")));
 		dict.put("underscore.js", new com.rhfung.P2PDictionary.MIMEByteObject("application/javascript", getFileInPackage("/underscore.js")));
 		dict.put("jquery-1.7.2.js", new com.rhfung.P2PDictionary.MIMEByteObject("application/javascript", getFileInPackage("/jquery-1.7.2.js")));
 		
+		System.out.println("Started");
 		try {
 			System.in.read();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("Closing");
+		System.out.println("Closing server...");
 		dict.close();
 	}
 	

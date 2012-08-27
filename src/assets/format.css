@@ -4,6 +4,14 @@ body
 	font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
 }
 
+footer
+{
+	width: 800px;
+	float: left;
+	text-align: center;
+	color: gray;
+}
+
 #panel {
 	width: 800px;
 	background-color: white;

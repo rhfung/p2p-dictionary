@@ -1,6 +1,6 @@
-Local File Transfer
+LAN File Transfer
 
-Local File Transfer is a web application that allows a person to transfer files
+LAN File Transfer is a web application that allows a person to transfer files
 on a personal LAN without using the cloud. It is Dropbox without the cloud.
 
 

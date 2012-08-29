@@ -1,33 +1,20 @@
 // http://www.matlus.com/html5-file-upload-with-progress/
 
 
-/*
-function uploadComplete(evt) {
-// This event is raised when the server send back a response 
-var response = $.parseJSON(evt.target.responseText);
-alert( response.size);
-}
-
-function uploadFailed(evt) {
-alert("There was an error attempting to upload the file.");
-}
-
-function uploadCanceled(evt) {
-alert("The upload has been canceled by the user or the browser dropped the connection.");
-}*/
-
 // main view
 $(document).ready( function() {
 (function ($) {
 	var EventBus = _.extend({}, Backbone.Events);
 
 	P2PFile = Backbone.Model.extend({
-		pathname: null,
-		name: null,
-		owner: null,
-		revision: null,
-		type: null,
-		status: null
+	  defaults: {
+  		"pathname": null,
+  		"name": null,
+  		"owner": null,
+  		"revision": null,
+  		"type": null,
+  		"status": null
+	  }
 	});
 
 	P2PFiles = Backbone.Collection.extend({
@@ -95,14 +82,14 @@ $(document).ready( function() {
 				$("#refreshlist").removeAttr("disabled");
 			},
 		renderAppend: function (item) {
-			$('#filelist', this.el).append("<div class='fileentry'><div class='filename'><a href='" + item.pathname + "'>" + item.name + "</a></div></div>");
+			$('#filelist', this.el).append("<div class='fileentry'><div class='filename'><a href='" + item.get("pathname") + "'>" + item.get("name") + "</a></div></div>");
 		},
 		renderClear: function(item) {
 			$('#filelist', this.el).empty();
 		},
 		updateOneItem: function(data) {
 			var file = this.fileFromJSON(data);
-			if (!_.any(this.collection.models, function (test) { return file.name == test.name; } ))
+			if (!_.any(this.collection.models, function (test) { return file.get("name") == test.get("name"); } ))
 				this.collection.add(file );
 			// else do some refresh??
 		},
@@ -111,7 +98,7 @@ $(document).ready( function() {
 			{
 				alert("You did not specify any file.");
 			}
-			if(_.any(this.collection.models, function (test) { return file.name == test.name; } )){
+			if(_.any(this.collection.models, function (test) { return file.name == test.get("name"); } )){
 				if (confirm("The file already exists. Are you sure you want to overwrite "  + file.name + "?")== false)
 				{
 					return;
@@ -168,13 +155,15 @@ $(document).ready( function() {
 				return k;
 				
 			var f = new P2PFile();
-			f.pathname = k.key;
-			f.name =  k.key.substring(k.key.lastIndexOf("/") + 1);
-			f.owner = k.owner;
-			f.revision = k.revision;
-			f.type = k.type;
-			f.status = k.status;
-			
+			f.set({
+			  "pathname" : k.key,
+			  "name" :  k.key.substring(k.key.lastIndexOf("/") + 1),
+			  "owner" : k.owner,
+			  "revision" : k.revision,
+			  "type" : k.type,
+			  "status" : k.status 
+			});
+		
 			return f;
 		}
 
@@ -201,7 +190,6 @@ $(document).ready( function() {
 				 "change #fileToUpload" : "methodFilePreview",
 				 "click #btnCancel" : "methodCancel" },
 		methodUploadfile: function() {
-			
 			EventBus.trigger("upload", document.getElementById('fileToUpload').files[0]);  
 		},
 		methodCancel: function() {
@@ -213,7 +201,6 @@ $(document).ready( function() {
 			$("#upload").hide();
 		},
 		methodFilePreview: function () {
-			//alert($("#fileToUpload").val());
 			var file = $("#fileToUpload")[0].files[0]; // jQuery object returned. get the DOM object, then get the file
 			if (file) {
 			  // display friendly outuput

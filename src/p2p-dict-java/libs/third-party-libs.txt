@@ -1,0 +1,16 @@
+Jackson Java JSON-processor
+http://jackson.codehaus.org/
+- Core
+- Annotations
+- Databind
+
+Apple Bonjour Print Services
+http://www.apple.com/support/bonjour/
+=> dns_sd.jar (Windows version included)
+
+Apache Commons
+http://commons.apache.org/
+- IO
+- Lang
+- FileUpload
+

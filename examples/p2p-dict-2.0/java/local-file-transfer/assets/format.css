@@ -1,0 +1,72 @@
+body
+{
+	width: 100%;
+	font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+}
+
+footer
+{
+	width: 800px;
+	float: left;
+	text-align: center;
+	color: gray;
+}
+
+#panel {
+	width: 800px;
+	background-color: white;
+	margin-right:auto;
+	margin-left:auto;
+}
+
+#topheader {
+	text-align:center;
+	border-bottom:thin;
+	border-bottom-color:black;
+	border-bottom-style:solid;
+	
+}
+
+#p2pfiles {
+	
+	float:left;
+	width:47%;
+}
+
+#localcomputer {
+	float:right;
+	width:47%;
+}
+
+#fileentry:nth-child(even)
+{
+	background-color:#99FFCC;	
+}
+
+#upload
+{
+	display:none;
+}
+
+#uploader
+{
+	background-color:lightgray;
+}
+
+button {
+	background-color: #339933;
+	color: #FFFFFF;
+	border: thin solid #000000;
+	border-radius: 10px;
+	margin: 2px;
+	padding: 3px;
+}
+
+button:disabled {
+	background-color: #008000;
+	color: #333333;
+	border: thin solid #000000;
+	border-radius: 10px;
+	margin: 2px;
+	padding: 3px;
+}

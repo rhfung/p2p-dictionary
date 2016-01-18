@@ -1,9 +1,14 @@
 P2P Dictionary
 ==============
 
-P2P Dictionary is a distributed key-value store for multiple computers on a local area network. Each computer runs a P2P server, which replicates a subset of stored dictionary entries (key-value pairs). Each computer chooses a subset of keys to subscribe to. This dictionary provides an API written for .NET and Java applications. A REST interface is provided by the P2P server for read-only access to dictionary entries. A local area network is defined by Apple Bonjour's local service discovery. Similar to other NoSQL implementations, it does not provide an SQL interface or guarantee ACID (atomicity, consistency, isolation, durability).
+P2P Dictionary is a distributed key-value store for multiple computers on a local area network.
+Each computer runs a P2P server, which replicates a subset of stored dictionary entries (key-value pairs).
+Each computer chooses a subset of keys to subscribe to. This dictionary provides an API written for .NET
+and Java applications. A REST interface is provided by the P2P server for read-only access to dictionary entries.
+A local area network is defined by Apple Bonjour's local service discovery. Similar to other NoSQL implementations,
+it does not provide an SQL interface or guarantee ACID (atomicity, consistency, isolation, durability).
 
-Copyright (C) 2011-2014, Richard H Fung
+Copyright (C) 2011-2016, Richard H Fung
 
 License
 -------

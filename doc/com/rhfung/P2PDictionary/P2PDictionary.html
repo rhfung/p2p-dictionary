@@ -149,13 +149,13 @@ implements java.util.Map&lt;java.lang.String,java.lang.Object&gt;</pre>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><strong><a href="../../../com/rhfung/P2PDictionary/P2PDictionary.html#P2PDictionary(java.lang.String, int, java.lang.String, com.rhfung.P2PDictionary.P2PDictionaryServerMode, com.rhfung.P2PDictionary.P2PDictionaryClientMode, int, com.rhfung.P2PDictionary.IDictionaryCallback)">P2PDictionary</a></strong>(java.lang.String&nbsp;description,
+<td class="colOne"><code><strong><a href="../../../com/rhfung/P2PDictionary/P2PDictionary.html#P2PDictionary(java.lang.String, int, java.lang.String, com.rhfung.P2PDictionary.P2PDictionaryServerMode, com.rhfung.P2PDictionary.P2PDictionaryClientMode, int, com.rhfung.P2PDictionary.callback.IDictionaryCallback)">P2PDictionary</a></strong>(java.lang.String&nbsp;description,
              int&nbsp;port,
              java.lang.String&nbsp;ns,
              <a href="../../../com/rhfung/P2PDictionary/P2PDictionaryServerMode.html" title="enum in com.rhfung.P2PDictionary">P2PDictionaryServerMode</a>&nbsp;serverMode,
              <a href="../../../com/rhfung/P2PDictionary/P2PDictionaryClientMode.html" title="enum in com.rhfung.P2PDictionary">P2PDictionaryClientMode</a>&nbsp;clientMode,
              int&nbsp;searchForClientsTimespan,
-             com.rhfung.P2PDictionary.IDictionaryCallback&nbsp;cb)</code>
+             com.rhfung.P2PDictionary.callback.IDictionaryCallback&nbsp;cb)</code>
 <div class="block">Creates a dictionary object.</div>
 </td>
 </tr>
@@ -417,7 +417,7 @@ implements java.util.Map&lt;java.lang.String,java.lang.Object&gt;</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../com/rhfung/P2PDictionary/P2PDictionary.html#setCallback(com.rhfung.P2PDictionary.IDictionaryCallback)">setCallback</a></strong>(com.rhfung.P2PDictionary.IDictionaryCallback&nbsp;newCallback)</code>
+<td class="colLast"><code><strong><a href="../../../com/rhfung/P2PDictionary/P2PDictionary.html#setCallback(com.rhfung.P2PDictionary.callback.IDictionaryCallback)">setCallback</a></strong>(com.rhfung.P2PDictionary.callback.IDictionaryCallback&nbsp;newCallback)</code>
 <div class="block">Sets a callback.</div>
 </td>
 </tr>
@@ -523,7 +523,7 @@ implements java.util.Map&lt;java.lang.String,java.lang.Object&gt;</pre>
              <a href="../../../com/rhfung/P2PDictionary/P2PDictionaryServerMode.html" title="enum in com.rhfung.P2PDictionary">P2PDictionaryServerMode</a>&nbsp;serverMode,
              <a href="../../../com/rhfung/P2PDictionary/P2PDictionaryClientMode.html" title="enum in com.rhfung.P2PDictionary">P2PDictionaryClientMode</a>&nbsp;clientMode,
              int&nbsp;searchForClientsTimespan,
-             com.rhfung.P2PDictionary.IDictionaryCallback&nbsp;cb)</pre>
+             com.rhfung.P2PDictionary.callback.IDictionaryCallback&nbsp;cb)</pre>
 <div class="block">Creates a dictionary object.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>description</code> - User-friendly description of the dictionary to appear on its website</dd><dd><code>port</code> - Port for binding a server</dd><dd><code>ns</code> - Namespace of the dictionary, must be IDENTICAL between all connected peers.</dd><dd><code>serverMode</code> - Can start the server on constructor or OpenServer, or not at all. Can open start server once.</dd><dd><code>clientMode</code> - Determines if other dictionary peers are connected automatically using searchForClientsTimespan</dd><dd><code>searchForClientsTimespan</code> - time in milliseconds</dd><dd><code>cb</code> - Callback object to handle callbacks from the dictionary on alternate threads</dd></dl>
 </li>

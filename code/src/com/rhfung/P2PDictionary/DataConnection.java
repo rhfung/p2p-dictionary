@@ -1611,15 +1611,19 @@ class DataConnection
         
         private String getFileInPackage(String filename)
         {
-        	InputStream stream = Thread.currentThread().getClass().getResourceAsStream(filename);
-        	String ret = convertStreamToString(stream);
         	try {
-				stream.close();
+                InputStream stream = Thread.currentThread().getClass().getResourceAsStream(filename);
+                if (stream != null) {
+                    String ret = convertStreamToString(stream);
+                    stream.close();
+                    return ret;
+                } else {
+                    return "";
+                }
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				
+                return "";
 			}
-        	return ret;
         }
         
         // http://stackoverflow.com/questions/309424/in-java-how-do-i-read-convert-an-inputstream-to-a-string

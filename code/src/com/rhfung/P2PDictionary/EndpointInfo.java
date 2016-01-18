@@ -22,7 +22,7 @@ package com.rhfung.P2PDictionary;
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-class EndpointInfo {
+public class EndpointInfo {
 	public int UID;
 	public java.net.InetAddress Address;
 	public int Port;

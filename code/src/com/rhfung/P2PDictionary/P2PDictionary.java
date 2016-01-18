@@ -24,12 +24,9 @@ package com.rhfung.P2PDictionary;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
@@ -47,9 +44,14 @@ import com.rhfung.Interop.EndPointMetadata;
 import com.rhfung.Interop.ListInt;
 import com.rhfung.Interop.NotSupportedException;
 import com.rhfung.Interop.TcpClient;
+import com.rhfung.P2PDictionary.callback.DefaultCallback;
+import com.rhfung.P2PDictionary.callback.IDictionaryCallback;
+import com.rhfung.P2PDictionary.peers.NoDiscovery;
+import com.rhfung.P2PDictionary.peers.PeerDiscovery;
+import com.rhfung.P2PDictionary.peers.PeerInterface;
 
 
-    /**
+/**
      * Main class for connecting to the P2P dictionary.
      * @author Richard
      *
@@ -65,11 +67,8 @@ import com.rhfung.Interop.TcpClient;
 
         static final  int SLEEP_WAIT_TO_CLOSE = 100;
         static final  int SLEEP_IDLE_SLEEP = 8;
-        static final  int SLEEP_IDLE_SERVER = 50;
         static final  int SLEEP_USER_RETRY_READ = 30;
         
-        static final String ENCODING = "UTF-8";
-
         volatile boolean killbit = false;
         volatile boolean killbitSenderThreads = false;
 
@@ -105,6 +104,96 @@ import com.rhfung.Interop.TcpClient;
 
         /**
          * Creates a dictionary object.
+         */
+        public class Builder {
+            private String m_description = "";
+            private int m_port = 8765;
+            private String m_namespace = "default";
+            private P2PDictionaryServerMode m_serverMode = P2PDictionaryServerMode.AutoRegister;
+            private P2PDictionaryClientMode m_clientMode = P2PDictionaryClientMode.AutoConnect;
+            private int m_clientSearchTimespan = 5000;
+            private IDictionaryCallback m_callback = new DefaultCallback();
+            private PeerInterface m_discovery = new NoDiscovery();
+
+            /**
+             * User-friendly description of the dictionary to appear on its website
+             * @param description
+             */
+            public void setDescription(String description) {
+                m_description = description;
+            }
+
+            /**
+             * Port for binding a server
+             * @param port
+             */
+            public void setPort(int port) {
+                m_port = port;
+            }
+
+            /**
+             * Namespace of the dictionary, must be IDENTICAL between all connected peers.
+             * @param namespace
+             */
+            public void setNamespace(String namespace) {
+                m_namespace = namespace;
+            }
+
+            /**
+             * Can start the server on constructor or OpenServer, or not at all. Can open start server once.
+             * @param serverMode
+             */
+            public void setServerMode(P2PDictionaryServerMode serverMode){
+                m_serverMode = serverMode;
+            }
+
+            /**
+             * Determines if other dictionary peers are connected automatically using searchForClientsTimespan
+             * @param clientMode
+             */
+            public void setClientMode(P2PDictionaryClientMode clientMode) {
+                m_clientMode = clientMode;
+            }
+
+            /**
+             * Duration for dictionary peers to connect automatically
+             * @param timespan
+             */
+            public void setClientSearchTimespan(int timespan) {
+                m_clientSearchTimespan = timespan;
+            }
+
+            /**
+             * Callback object to handle callbacks from the dictionary on alternate threads
+             * @param callback
+             */
+            public void setCallback(IDictionaryCallback callback) {
+                m_callback = callback;
+            }
+
+            /**
+             * Backend for discovering peers.
+             * @param discovery
+             */
+            public void setPeerDiscovery(PeerInterface discovery) {
+                m_discovery = discovery;
+            }
+
+            public P2PDictionary build() {
+                return new P2PDictionary(m_description,
+                        m_port,
+                        m_namespace,
+                        m_serverMode,
+                        m_clientMode,
+                        m_clientSearchTimespan,
+                        m_callback,
+                        m_discovery
+                );
+            }
+        }
+
+        /**
+         * Creates a dictionary object.
          * @param description User-friendly description of the dictionary to appear on its website
          * @param port Port for binding a server
          * @param ns Namespace of the dictionary, must be IDENTICAL between all connected peers.
@@ -117,69 +206,45 @@ import com.rhfung.Interop.TcpClient;
                 P2PDictionaryClientMode clientMode,
                 int searchForClientsTimespan)
         {
-        	this(description, port, ns, serverMode, clientMode, searchForClientsTimespan, new IDictionaryCallback() {
-				
-				@Override
-				public void SubscriptionChanged(SubscriptionEventArgs e) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void Notification(NotificationEventArgs e) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void Disconnected(ConnectionEventArgs e) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void ConnectionFailure(ConnectionEventArgs e) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void Connected(ConnectionEventArgs e) {
-					// TODO Auto-generated method stub
-					
-				}
-			});
-        	
+        	this(description, port, ns, serverMode, clientMode, searchForClientsTimespan, new DefaultCallback());
         }
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="description">Descriptive name that describes this dictionary. Only used for web access.</param>
-        /// <param name="port">Server port number. Only one instance of the server can run on a computer.</param>
-        /// <param name="ns">Dictionary partition that is defines a unique shared dictionary.</param>
-        /// <param name="serverMode"> = P2PDictionaryServerMode.AutoRegister</param>
-        /// <param name="clientMode"> = P2PDictionaryClientMode.AutoConnect</param>
-        /// <param name="searchForClients">Time to search for clients in ms if clientMode == AutoConnect; = 1500</param>
+
         /**
          * Creates a dictionary object.
          * @param description User-friendly description of the dictionary to appear on its website
          * @param port Port for binding a server
-         * @param ns Namespace of the dictionary, must be IDENTICAL between all connected peers.
+         * @param namespace Namespace of the dictionary, must be IDENTICAL between all connected peers.
          * @param serverMode Can start the server on constructor or OpenServer, or not at all. Can open start server once.
          * @param clientMode Determines if other dictionary peers are connected automatically using searchForClientsTimespan
          * @param searchForClientsTimespan time in milliseconds
          * @param cb Callback object to handle callbacks from the dictionary on alternate threads
          */
-        public P2PDictionary(String description,  int port, String ns,
-            P2PDictionaryServerMode serverMode,
-            P2PDictionaryClientMode clientMode,
-            int searchForClientsTimespan, IDictionaryCallback cb )
+        public P2PDictionary(String description,
+                             int port,
+                             String namespace,
+                             P2PDictionaryServerMode serverMode,
+                             P2PDictionaryClientMode clientMode,
+                             int searchForClientsTimespan,
+                             IDictionaryCallback cb)
+        {
+            this(description, port, namespace,
+                    serverMode, clientMode, searchForClientsTimespan,
+                    new DefaultCallback(), new NoDiscovery());
+        }
+
+        private P2PDictionary(String description,
+                             int port,
+                             String namespace,
+                             P2PDictionaryServerMode serverMode,
+                             P2PDictionaryClientMode clientMode,
+                             int searchForClientsTimespan,
+                             IDictionaryCallback cb,
+                             PeerInterface discovery)
         {
             // some random ID
             this._description = description;
             this._localUID = UIDGenerator.GetNextInteger();
-            this._partition = ns;
+            this._partition = namespace;
             this._defaultKey = "";
 
             // load data from caller
@@ -190,7 +255,7 @@ import com.rhfung.Interop.TcpClient;
             this.connections = new Vector<DataConnection>();
             this.subscription = new Subscription(this);
 
-            this.discovery = new PeerDiscovery();
+            this.discovery = new PeerDiscovery(discovery);
             this.callback  = cb;
 
             // sender threads
@@ -250,7 +315,7 @@ import com.rhfung.Interop.TcpClient;
         /**
          * Sets a callback. Callback methods run on different threads.
          * Be careful not to block or throw an exception.
-         * @param callback null or object
+         * @param newCallback null or object
          */
         public void setCallback(IDictionaryCallback newCallback)
         {
@@ -315,22 +380,6 @@ import com.rhfung.Interop.TcpClient;
                 return this.connections;
             
         }
-
-        ///// <summary>
-        ///// Returns the number of remotely connected peers
-        ///// </summary>
-        //public int RemotePeersCount
-        //{
-        //    get 
-        //    {
-        //        lock (this.connections)
-        //        {
-        //            return this.connections.Count;
-        //        }
-        //    }
-        //}
-
-
         
         /**
          * Name of the dictionary partition. Only data is accessible if in the same partition.
@@ -412,7 +461,7 @@ import com.rhfung.Interop.TcpClient;
          * When the web interface's root key is called, the value for the following
          * key is returned instead. Allows a web browser to automatically redirect
          * for return code 301. 
-         * @param empty string to use the default homepage; null to disable homepage
+         * @param key string to use the default homepage; null to disable homepage
          */
         public void setDefaultKey(String key)
         {
@@ -1183,9 +1232,6 @@ import com.rhfung.Interop.TcpClient;
         /**
          * Returns a DataConnection where
          * x => header.sentFrom.Contains(x.RemoteUID) && x.RemoteUID != LocalID && x.IsConnected 
-         * @param containsRemoteID
-         * @param doesNotContainID
-         * @return
          */
         DataConnection connectionMatching(ListInt listToTest, int doesNotContainID)
         {
@@ -1473,9 +1519,9 @@ import com.rhfung.Interop.TcpClient;
         {
             
             ListInt keys ;
-            synchronized (PeerDiscovery.DiscoveredPeers)
+            synchronized (PeerDiscovery.getDiscoveredPeers())
             {
-                keys = new ListInt(PeerDiscovery.DiscoveredPeers.keys());
+                keys = new ListInt(PeerDiscovery.getDiscoveredPeers().keys());
             }
 
             keys.remove(getLocalID());
@@ -1519,9 +1565,9 @@ import com.rhfung.Interop.TcpClient;
                     }
                 }
                 List<EndpointInfo> nextConnInfo;
-                synchronized (PeerDiscovery.DiscoveredPeers)
+                synchronized (PeerDiscovery.getDiscoveredPeers())
                 {
-                    nextConnInfo = PeerDiscovery.DiscoveredPeers.get(nextUID);
+                    nextConnInfo = PeerDiscovery.getDiscoveredPeers().get(nextUID);
                 }
                 synchronized (nextConnInfo)
                 {
@@ -1544,9 +1590,9 @@ import com.rhfung.Interop.TcpClient;
                 }
 
                 List<EndpointInfo> nextConnInfo;
-                synchronized (PeerDiscovery.DiscoveredPeers)
+                synchronized (PeerDiscovery.getDiscoveredPeers())
                 {
-                    nextConnInfo = PeerDiscovery.DiscoveredPeers.get(keys.get(pickNum));
+                    nextConnInfo = PeerDiscovery.getDiscoveredPeers().get(keys.get(pickNum));
                 }
                 synchronized (nextConnInfo)
                 {
@@ -1617,25 +1663,6 @@ import com.rhfung.Interop.TcpClient;
         // Dictionary Interface
 
 
-
-//        public bool Contains(KeyValuePair<string, object> item)
-//        {
-//            DataEntry entry = GetEntry(this.data, this.dataLock, GetFullKey(DATA_NAMESPACE, _namespace, item.Key));
-//            return (entry.subscribed && entry.value.Equals(item.Value));
-//        }
-//
-//        public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
-//        {
-//            var en = this.GetEnumerator();
-//            int index = arrayIndex;
-//            while (en.MoveNext() && index < array.Length)
-//            {
-//                array[index] = en.Current;
-//                index++;
-//            }
-//        }
-
-
         private Object m_Tag;
 
         /**
@@ -1656,34 +1683,6 @@ import com.rhfung.Interop.TcpClient;
         	m_Tag = tag;
         }
 
-//        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
-//        {
-//            List<KeyValuePair<string, object>>.Enumerator retValue;
-//            dataLock.EnterReadLock();
-//            try
-//            {
-//                retValue = new List<KeyValuePair<string, object>>(this.data.Where(x => IsFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => new KeyValuePair<string, object>(GetUserKey(DATA_NAMESPACE, _namespace, x.Key), x.Value.value))).GetEnumerator();
-//            }
-//            finally
-//            {
-//                dataLock.ExitReadLock();
-//            }
-//            return retValue;
-//        }
-//
-//        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-//        {
-//            List<KeyValuePair<string, object>>.Enumerator retValue;
-//            dataLock.EnterReadLock();
-//            try
-//            {
-//                retValue = new List<KeyValuePair<string, object>>(this.data.Where(x => IsFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => new KeyValuePair<string, object>(GetUserKey(DATA_NAMESPACE, _namespace, x.Key), x.Value.value))).GetEnumerator();
-//            }
-//            finally { dataLock.ExitReadLock(); }
-//            return retValue;
-//        }
-
-        
         /// <summary>
         /// Searches for the next highest free port starting at basePort.
         /// Throws ApplicationException if port not found.
@@ -1818,8 +1817,8 @@ import com.rhfung.Interop.TcpClient;
         {
             if (discovery != null)
             {
-                List<EndpointInfo> list = new Vector<EndpointInfo>(PeerDiscovery.DiscoveredPeers.size());
-                for(List<EndpointInfo> l : PeerDiscovery.DiscoveredPeers.values())
+                List<EndpointInfo> list = new Vector<EndpointInfo>(PeerDiscovery.getDiscoveredPeers().size());
+                for(List<EndpointInfo> l : PeerDiscovery.getDiscoveredPeers().values())
                 {
                     for(EndpointInfo m : l)
                     {

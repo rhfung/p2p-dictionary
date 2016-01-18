@@ -1,4 +1,4 @@
-package com.rhfung.P2PDictionary;
+package com.rhfung.P2PDictionary.callback;
 
 //P2PDictionary
 //Copyright (C) 2013, Richard H Fung (www.richardhfung.com)
@@ -22,9 +22,11 @@ package com.rhfung.P2PDictionary;
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-abstract class IDictionaryCallback {
+import com.rhfung.P2PDictionary.ConnectionEventArgs;
+import com.rhfung.P2PDictionary.NotificationEventArgs;
+import com.rhfung.P2PDictionary.SubscriptionEventArgs;
 
-
+public abstract class IDictionaryCallback {
     abstract public void SubscriptionChanged(SubscriptionEventArgs e);
     abstract public void Notification(NotificationEventArgs e);
     abstract public void Connected(ConnectionEventArgs e);

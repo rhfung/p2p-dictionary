@@ -209,7 +209,7 @@ class DataConnection
             {
                 int counter = 0;
                 // spin wait
-                while (this.state != ConnectionState.Closed && counter < 50) // ~ 5 seconds
+                while (this.state != ConnectionState.Closed && counter < 10) // ~ 1 second
                 {
                     try {
 						Thread.sleep(P2PDictionary.SLEEP_WAIT_TO_CLOSE);

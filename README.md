@@ -18,21 +18,23 @@ You agree to the LICENSE before using this Software.
 Basic requirements
 ------------------
 
+* Java SE 1.6 or higher
+
+For auto-peer discovery:
 * Requires Apple Bonjour Print Services for Windows:
   http://support.apple.com/kb/DL999
-* Java SE 1.6 or higher
+* DNS_SD.jar from Apple Bonjour (Windows)
+* Windows computer
+
+Java libraries (in the `lib` directory):
 * Jackson JSON 2.0 core libraries (annotations, core, databind)
-* DNS_SD.jar from Apple Bonjour
-* Apache Common libraries
+* Apache Common libraries (cli, fileupload, io, lang)
 
 Documentation
 -------------
 
-This library needs a lot more documentation. I have written documentation for parts of P2P Dictionary, which are available on my website.
-
-* Overview: http://www.rhfung.com/core/Engineering/P2PDictionary
-* Java library API: http://www.rhfung.com/more/p2p-dict-2.0-javadoc/
-* REST protocol: http://www.rhfung.com/core/Engineering/P2PProtocolDocumentation
+This library needs a lot more documentation. I have written documentation for parts of P2P Dictionary
+in the `doc` directory.
 
 Example
 -------
@@ -49,9 +51,17 @@ Taken from examples/first-example/TestRun.java:
     // ...
     node.close();
 
+Related Projects
+----------------
+
+I forked this project from a graduate-level course on peer to peer networking.
+I moved the original implementation, written in C# for the .NET platform,
+into [another repository](https://github.com/rhfung/p2p-dictionary-csharp).
+
 Change Log
 ----------
 
-* Moved the .NET version of P2P Dictionary into [another repository](https://github.com/rhfung/p2p-dictionary-csharp)
-* 2.0.x: new REST API, Bonjour registration, support for any MIME type, and stability bug fixes. Not compatible with 1.6.3. Cross-platform.
-* 1.6.3: .NET only release with improper REST endpoints
+* 3.0: adding in daemon and client support
+* 2.0.x: REST-compliant API, Bonjour registration, support for any MIME type, and stability bug fixes.
+         Not compatible with 1.6.3. Cross-platform.
+* 1.6.3: .NET only release with non-compliant REST endpoints

@@ -13,8 +13,12 @@ public class MainObject {
 	{
 		System.out.println("Starting server on port 8765...");
 		
-		P2PDictionary dict = new P2PDictionary("Local File Transfer", 8765, "lft", P2PDictionaryServerMode.AutoRegister,
-				P2PDictionaryClientMode.AutoConnect, 1500);
+		final P2PDictionary dict = (new P2PDictionary.Builder())
+			.setDescription("Local File Transfer")
+			.setPort(8765)
+			.setNamespace("lft")
+			.setClientSearchTimespan(1500)
+			.build();
 		
 		dict.setDebugBuffer(System.out, 1, true);
 		dict.setDefaultKey("index.html");
@@ -24,7 +28,17 @@ public class MainObject {
 		dict.put("format.css", new com.rhfung.P2PDictionary.MIMEByteObject("text/css", getFileInPackage("/format.css")));
 		dict.put("underscore.js", new com.rhfung.P2PDictionary.MIMEByteObject("application/javascript", getFileInPackage("/underscore.js")));
 		dict.put("jquery-1.7.2.js", new com.rhfung.P2PDictionary.MIMEByteObject("application/javascript", getFileInPackage("/jquery-1.7.2.js")));
-		
+
+		Thread shutdown = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("Closing server");
+				dict.close();
+			}
+		});
+
+		Runtime.getRuntime().addShutdownHook(shutdown);
+
 		System.out.println("Started");
 		try {
 			System.in.read();
@@ -33,6 +47,7 @@ public class MainObject {
 		}
 		System.out.println("Closing server...");
 		dict.close();
+
 	}
 	
 	public static byte[] getFileInPackage(String pathname)

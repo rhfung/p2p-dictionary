@@ -120,64 +120,72 @@ import com.rhfung.logging.LogInstructions;
              * User-friendly description of the dictionary to appear on its website
              * @param description
              */
-            public void setDescription(String description) {
+            public Builder setDescription(String description) {
                 m_description = description;
+                return this;
             }
 
             /**
              * Port for binding a server
              * @param port
              */
-            public void setPort(int port) {
+            public Builder setPort(int port) {
                 m_port = port;
+                return this;
             }
 
             /**
              * Namespace of the dictionary, must be IDENTICAL between all connected peers.
              * @param namespace
              */
-            public void setNamespace(String namespace) {
+            public Builder setNamespace(String namespace) {
                 m_namespace = namespace;
+                return this;
             }
 
             /**
              * Can start the server on constructor or OpenServer, or not at all. Can open start server once.
              * @param serverMode
              */
-            public void setServerMode(P2PDictionaryServerMode serverMode){
+            public Builder setServerMode(P2PDictionaryServerMode serverMode){
                 m_serverMode = serverMode;
+                return this;
             }
 
             /**
              * Determines if other dictionary peers are connected automatically using searchForClientsTimespan
              * @param clientMode
              */
-            public void setClientMode(P2PDictionaryClientMode clientMode) {
+            public Builder setClientMode(P2PDictionaryClientMode clientMode) {
                 m_clientMode = clientMode;
+                return this;
             }
 
             /**
              * Duration for dictionary peers to connect automatically
              * @param timespan
              */
-            public void setClientSearchTimespan(int timespan) {
+            public Builder setClientSearchTimespan(int timespan) {
                 m_clientSearchTimespan = timespan;
+                return this;
             }
 
             /**
              * Callback object to handle callbacks from the dictionary on alternate threads
              * @param callback
              */
-            public void setCallback(IDictionaryCallback callback) {
+            public Builder setCallback(IDictionaryCallback callback) {
                 m_callback = callback;
+                return this;
             }
 
             /**
              * Backend for discovering peers.
              * @param discovery
              */
-            public void setPeerDiscovery(PeerInterface discovery) {
+            public Builder setPeerDiscovery(PeerInterface discovery) {
                 m_discovery = discovery;
+                return this;
             }
 
             public P2PDictionary build() {

@@ -70,6 +70,7 @@ The Docker-related configuration files are:
 * start
 * .dockerignore
 * Dockerfile
+* docker/dockerstart
 
 Related Projects
 ----------------

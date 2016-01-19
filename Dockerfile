@@ -1,5 +1,7 @@
 FROM java:7
 
+RUN echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf
+
 COPY ./code/ /usr/p2pd/
 COPY ./lib/ /usr/p2pd/lib/
 
@@ -21,3 +23,4 @@ EXPOSE 8765
 
 ENTRYPOINT ["/usr/p2pd/bin/start"]
 
+CMD ["-debug"]

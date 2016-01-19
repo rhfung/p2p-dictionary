@@ -1,3 +1,4 @@
 #!/bin/bash
+echo Running p2pd...
 cd /usr/p2pd/bin
-java -cp /usr/p2pd/lib/*:/usr/p2pd/bin com.rhfung.p2pd.Server -debug $@
+java -cp /usr/p2pd/lib/*:/usr/p2pd/bin com.rhfung.p2pd.Server "$@"

@@ -2,5 +2,6 @@
 echo Run this command once to build the P2P Dictionary
 echo The running docker container is `p2p-server`
 echo
+docker rm p2p-server
 docker build -t p2pd .
 docker run --name p2p-server -p 8765:8765 -i -t p2pd

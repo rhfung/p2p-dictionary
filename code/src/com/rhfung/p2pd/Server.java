@@ -5,7 +5,6 @@ import com.rhfung.P2PDictionary.peers.WindowsBonjour;
 import com.rhfung.logging.LogInstructions;
 import org.apache.commons.cli.*;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 

@@ -20,15 +20,17 @@ Basic requirements
 
 * Java SE 1.6 or higher
 
-For auto-peer discovery:
-* Requires Apple Bonjour Print Services for Windows:
+* For auto-peer discovery:
+** Requires Apple Bonjour Print Services for Windows:
   http://support.apple.com/kb/DL999
-* DNS_SD.jar from Apple Bonjour (Windows)
-* Windows computer
+** DNS_SD.jar from Apple Bonjour (Windows)
+** Windows computer
 
-Java libraries (in the `lib` directory):
-* Jackson JSON 2.0 core libraries (annotations, core, databind)
-* Apache Common libraries (cli, fileupload, io, lang)
+* Java libraries (in the `lib` directory):
+** Jackson JSON 2.0 core libraries (annotations, core, databind)
+** Apache Common libraries (cli, fileupload, io, lang)
+
+* Docker, for running locally.
 
 Documentation
 -------------
@@ -36,8 +38,8 @@ Documentation
 This library needs a lot more documentation. I have written documentation for parts of P2P Dictionary
 in the `doc` directory.
 
-Example
--------
+Examples
+--------
 
 Taken from examples/first-example/TestRun.java:
 
@@ -51,6 +53,24 @@ Taken from examples/first-example/TestRun.java:
     // ...
     node.close();
 
+See other sample projects in `examples`
+
+Running in Docker
+-----------------
+
+To run this project locally, run the following commands from your Docker terminal:
+
+    ./start
+
+And then visit the URL ```http://docker_url:8765``` where `docker_url` is `localhost` (linux)
+or the docker machine URL (mac)
+
+The Docker-related configuration files are:
+
+* start
+* .dockerignore
+* Dockerfile
+
 Related Projects
 ----------------
 
@@ -58,8 +78,12 @@ I forked this project from a graduate-level course on peer to peer networking.
 I moved the original implementation, written in C# for the .NET platform,
 into [another repository](https://github.com/rhfung/p2p-dictionary-csharp).
 
-Change Log
-----------
+Distribution
+----------------
+
+See the `dist` directory. The distribution also requires `lib` jars.
+
+### Change Log
 
 * 3.0: adding in daemon and client support
 * 2.0.x: REST-compliant API, Bonjour registration, support for any MIME type, and stability bug fixes.

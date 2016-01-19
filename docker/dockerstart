@@ -1,0 +1,3 @@
+#!/bin/bash
+cd /usr/p2pd/bin
+java -cp /usr/p2pd/lib/*:/usr/p2pd/bin com.rhfung.p2pd.Server -debug $@

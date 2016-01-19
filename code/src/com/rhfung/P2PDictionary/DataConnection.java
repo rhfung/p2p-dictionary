@@ -34,7 +34,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -48,9 +47,8 @@ import java.util.Queue;
 import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
 
-import org.apache.commons.fileupload.FileUpload;
+import com.rhfung.logging.LogInstructions;
 import org.apache.commons.fileupload.MultipartStream;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -452,7 +450,7 @@ class DataConnection
         {
             if (debugBuffer != null)
             {
-                debugBuffer.Log(1, msg, true);
+                debugBuffer.Log(LogInstructions.INFO, msg, true);
             }
         }
 
@@ -553,7 +551,7 @@ class DataConnection
             // pull using a GET or HEAD command
 
             if (debugBuffer != null)
-                debugBuffer.Log(0, command, true);
+                debugBuffer.Log(LogInstructions.DEBUG, command, true);
 
             if (parts[0].equals( GET) || parts[0].equals(HEAD))
             {
@@ -1175,7 +1173,7 @@ class DataConnection
                 if (debugBuffer != null)
                 {
                     MemoryStream s = new MemoryStream(readData);
-                    debugBuffer.Log(0, s);
+                    debugBuffer.Log(LogInstructions.DEBUG, s);
                 }
 
             }
@@ -1317,8 +1315,8 @@ class DataConnection
                 	
                 	if (debugBuffer != null)
                     {
-                        debugBuffer.Log(1, this.local_uid + " wrote memory to " + this.remote_uid, true);
-                        debugBuffer.Log(0, bufferedOutput);
+                        debugBuffer.Log(LogInstructions.INFO, this.local_uid + " wrote memory to " + this.remote_uid, true);
+                        debugBuffer.Log(LogInstructions.DEBUG, bufferedOutput);
                     }
                     bufferedOutput.dispose();
                 }
@@ -1409,8 +1407,8 @@ class DataConnection
                             client.getOutputStream().flush();
                             if (debugBuffer != null)
                             {
-                                debugBuffer.Log(1, this.local_uid + " wrote " + key + " to " + this.remote_uid, true);
-                                debugBuffer.Log(0, bufferedOutput);
+                                debugBuffer.Log(LogInstructions.INFO, this.local_uid + " wrote " + key + " to " + this.remote_uid, true);
+                                debugBuffer.Log(LogInstructions.DEBUG, bufferedOutput);
                             }
                         }
                         bufferedOutput.dispose();
@@ -1951,11 +1949,11 @@ class DataConnection
 	                command = ReadLineFromBinary(reader);
 	
 	                if (debugBuffer != null)
-	                    debugBuffer.Log(0, command, false);
+	                    debugBuffer.Log(LogInstructions.DEBUG, command, false);
 	            }
 	
 	            if (debugBuffer != null)
-	                debugBuffer.Log(0, command, true);
+	                debugBuffer.Log(LogInstructions.DEBUG, command, true);
             }
             catch(IOException ex)
             {

@@ -49,6 +49,7 @@ import com.rhfung.P2PDictionary.callback.IDictionaryCallback;
 import com.rhfung.P2PDictionary.peers.NoDiscovery;
 import com.rhfung.P2PDictionary.peers.PeerDiscovery;
 import com.rhfung.P2PDictionary.peers.PeerInterface;
+import com.rhfung.logging.LogInstructions;
 
 
 /**
@@ -407,7 +408,7 @@ import com.rhfung.P2PDictionary.peers.PeerInterface;
          */
         public void setDebugBuffer(PrintStream debugBuffer)
         {
-        	setDebugBuffer(debugBuffer, 1, true);
+        	setDebugBuffer(debugBuffer, LogInstructions.INFO, true);
         }
         
 
@@ -1135,7 +1136,7 @@ import com.rhfung.P2PDictionary.peers.PeerInterface;
             {
                 synchronized (debugBuffer)
                 {
-                    debugBuffer.Log(1, msg, true);
+                    debugBuffer.Log(LogInstructions.INFO, msg, true);
                 }
             }
         }

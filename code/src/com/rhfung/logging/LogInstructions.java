@@ -1,7 +1,7 @@
-package com.rhfung.P2PDictionary;
+package com.rhfung.logging;
 
 //P2PDictionary
-//Copyright (C) 2013, Richard H Fung (www.richardhfung.com)
+//Copyright (C) 2016, Richard H Fung (www.richardhfung.com)
 //
 //Permission is hereby granted to any person obtaining a copy of this software 
 //and associated documentation files (the "Software"), to deal in the Software 
@@ -26,25 +26,28 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 
 import com.rhfung.Interop.MemoryStream;
 
 
-class LogInstructions
+public class LogInstructions
 {
     private SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
     private PrintStream m_writer;
-    int m_min_level = 0;
-    boolean m_autoFlush = false;
+    private int m_min_level = 0;
+    private boolean m_autoFlush = false;
+
+    public static final int DEBUG = 0;  // all payload data
+    public static final int INFO = 1;   // connection messages
+    public static final int WARN = 2;   // warnings only
+    public static final int ERROR = 3;  // errors only
 
     public LogInstructions(OutputStream writer, int min_level_to_log, boolean autoFlush)
     {
         m_writer = new PrintStream(writer);
         m_min_level = min_level_to_log;
-        m_autoFlush = false;
+        m_autoFlush = autoFlush;
     }
 
     public PrintStream GetTextWriter()
@@ -52,44 +55,59 @@ class LogInstructions
         return m_writer;
     }
 
-    /// <summary>
-    /// Writes a log message, if the level of the message matches/exceeds initial configuration.
-    /// Auto-flush is controlled on creation.
-    /// </summary>
-    /// <param name="level">level of the message</param>
-    /// <param name="message"></param>
+    private String LevelStringFromInteger(int level) {
+        if (level == DEBUG) {
+            return "DEBUG";
+        } else if (level == INFO) {
+            return "INFO";
+        } else if (level == WARN) {
+            return "WARN";
+        } else if (level == ERROR) {
+            return "ERROR";
+        } else {
+            return String.valueOf(level);
+        }
+    }
+
+    /**
+     * Writes a log message, if the level of the message matches/exceeds initial configuration.
+     * Auto-flush is controlled on creation.
+     * @param level
+     * @param message
+     * @param flushThisMessage
+     */
     public void Log(int level, String message, boolean flushThisMessage)
     {
         if (level >= m_min_level)
         {
         	synchronized (m_writer)
             {
-                m_writer.println(DateTimeNowTicks() + " [" + level + "] "  + message);
+                m_writer.println(DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] "  + message);
                 if (m_autoFlush && flushThisMessage)
                     m_writer.flush();
             }
         }
     }
 
-    /// <summary>
-    /// Writes a log message, if the level of the message matches/exceeds initial configuration.
-    /// Auto-flush is controlled on creation.
-    /// </summary>
-    /// <param name="level">level of the message</param>
-    /// <param name="message"></param>
+    /**
+     * Writes a log message, if the level of the message matches/exceeds initial configuration.
+     * Auto-flush is controlled on creation.
+     * @param level
+     * @param message
+     */
     public void Log(int level, MemoryStream message)
     {
         if (level >= m_min_level)
         {
             synchronized (m_writer)
             {
-                m_writer.println(DateTimeNowTicks() + " [" + level + "] " + " memory stream length " + message.getLength());
+                m_writer.println(DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] " + " memory stream length " + message.getLength());
                 try {
 					m_writer.write(message.getBuffer());
 				} catch (IOException e) {
 					m_writer.println(DateTimeNowTicks() + " error writing MemoryStream");
 				}
-                m_writer.println(DateTimeNowTicks() + "t [" + level + "] " + " end memory stream");
+                m_writer.println(DateTimeNowTicks() + "t [" + LevelStringFromInteger(level) + "] " + " end memory stream");
 
                 if (m_autoFlush)
                     m_writer.flush();

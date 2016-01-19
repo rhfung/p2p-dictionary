@@ -21,14 +21,14 @@ Basic requirements
 * Java SE 1.6 or higher
 
 * For auto-peer discovery:
-** Requires Apple Bonjour Print Services for Windows:
+  * Requires Apple Bonjour Print Services for Windows:
   http://support.apple.com/kb/DL999
-** DNS_SD.jar from Apple Bonjour (Windows)
-** Windows computer
+  * DNS_SD.jar from Apple Bonjour (Windows)
+  * Windows computer
 
 * Java libraries (in the `lib` directory):
-** Jackson JSON 2.0 core libraries (annotations, core, databind)
-** Apache Common libraries (cli, fileupload, io, lang)
+  * Jackson JSON 2.0 core libraries (annotations, core, databind)
+  * Apache Common libraries (cli, fileupload, io, lang)
 
 * Docker, for running locally.
 

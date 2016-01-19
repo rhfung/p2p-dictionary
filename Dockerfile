@@ -11,7 +11,7 @@ COPY ./docker/dockerstart ./usr/p2pd/bin/start
 
 WORKDIR /usr/p2pd
 
-ENV classpath=/usr/p2pd/lib/commons-cli-1.3.1.jar:/usr/p2pd/lib/commons-fileupload-1.2.2.jar:/usr/p2pd/lib/commons-io-2.4.jar:/usr/p2pd/lib/commons-lang3-3.1.jar:/usr/p2pd/lib/dns_sd.jar:/usr/p2pd/lib/jackson-annotations-2.0.2.jar:/usr/p2pd/lib/jackson-core-2.0.2.jar:/usr/p2pd/lib/jackson-databind-2.0.2.jar
+ENV classpath=/usr/p2pd/lib/commons-cli-1.3.1.jar:/usr/p2pd/lib/commons-fileupload-1.2.2.jar:/usr/p2pd/lib/commons-io-2.4.jar:/usr/p2pd/lib/commons-lang3-3.1.jar:/usr/p2pd/lib/dns_sd.jar:/usr/p2pd/lib/jackson-annotations-2.0.2.jar:/usr/p2pd/lib/jackson-core-2.0.2.jar:/usr/p2pd/lib/jackson-databind-2.0.2.jar:/usr/p2pd/lib/junit-4.12.jar
 
 RUN find -name "*.java" > sources.txt && javac -d /usr/p2pd/bin -cp $classpath @sources.txt
 

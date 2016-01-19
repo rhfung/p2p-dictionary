@@ -35,8 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -556,7 +554,7 @@ class DataConnection
             if (parts[0].equals( GET) || parts[0].equals(HEAD))
             {
                 Hashtable<String, String> headers = ReadHeaders(reader);
-                String contentLocation = URLDecode(parts[1]);
+                String contentLocation = URLUtils.URLDecode(parts[1]);
                 HandleReadGetOrHead(reader, headers, parts[0], contentLocation);
             }
             else if (parts[0].equals( PUT) ||
@@ -565,7 +563,7 @@ class DataConnection
             		parts[0].equals( PUSH))
             {
             	Hashtable<String, String> headers = ReadHeaders(reader);
-                String contentLocation = URLDecode( parts[1]);
+                String contentLocation = URLUtils.URLDecode( parts[1]);
                 HandleReadOne(parts[0], contentLocation, reader, headers);
             }
             // handle server 
@@ -2849,7 +2847,7 @@ throws JsonGenerationException, IOException
         /// <param name="dataRevision">resource version</param>
         private void WriteMethodDeleted(StreamWriter writer, String contentLocation, ListInt senderList, ListInt proxyResponsePath, int dataOwner, int dataRevision)
         {
-            writer.WriteLine(DELETE + " " + URLEncode(contentLocation) + " HTTP/1.1");
+            writer.WriteLine(DELETE + " " + URLUtils.URLEncode(contentLocation) + " HTTP/1.1");
             writer.WriteLine(HEADER_SPECIAL + ": " + Integer.toString(this.local_uid));
             writer.WriteLine("P2P-Sender-List: " + GetStringOf(senderList));
             if (proxyResponsePath != null)
@@ -2859,50 +2857,6 @@ throws JsonGenerationException, IOException
             writer.WriteLine("ETag: \"" + dataOwner + "." + dataRevision + "\"");
             writer.WriteLine();
             writer.Flush();
-        }
-
-        private static String URLEncode(String readableURL)
-        {
-            if (readableURL == null) {
-                return readableURL;
-            }
-            if (readableURL.equals("/")) {
-                return readableURL;
-            }
-        	try
-        	{
-                String[] parts = readableURL.split("/");
-                for (int i = 0; i < parts.length; i++) {
-                    parts[i] = URLEncoder.encode(parts[i], "utf-8");
-                }
-                return  StringUtils.join(parts, "/");
-        	}
-        	catch(Exception ex)
-        	{
-        		return readableURL;
-        	}
-        }
-        
-        private static String URLDecode(String encodedURL)
-        {
-            if (encodedURL == null) {
-                return encodedURL;
-            }
-            if (encodedURL.equals("/")) {
-                return encodedURL;
-            }
-        	try
-        	{
-                String[] parts = encodedURL.split("/");
-                for (int i = 0; i < parts.length; i++) {
-                    parts[i] = URLDecoder.decode(parts[i], "utf-8");
-                }
-        		return StringUtils.join(parts, "/");
-        	}
-        	catch(Exception ex)
-        	{
-        		return encodedURL;
-        	}
         }
 
         private static ListInt GetArrayOf(String integerList)
@@ -2944,7 +2898,7 @@ throws JsonGenerationException, IOException
         private void WriteMethodHeader(StreamWriter writer, String contentLocation, String contentType, int contentSize, 
             int dataOwner, int dataRevision, ListInt senderList, ListInt responsePath, boolean willClose)
         {
-            writer.WriteLine( PUSH + " " + URLEncode(contentLocation) + " HTTP/1.1");
+            writer.WriteLine( PUSH + " " + URLUtils.URLEncode(contentLocation) + " HTTP/1.1");
             writer.WriteLine(HEADER_SPECIAL + ": " + this.local_uid);
             writer.WriteLine("ETag: \"" + dataOwner + "." + dataRevision + "\"");
             writer.WriteLine("P2P-Sender-List: " + GetStringOf(senderList));
@@ -3006,7 +2960,7 @@ throws JsonGenerationException, IOException
 
         private void WriteSimpleGetRequest(StreamWriter writer, DataHeader request)
         {
-            writer.WriteLine(GET + " " + URLEncode( request.key) + " HTTP/1.1");
+            writer.WriteLine(GET + " " + URLUtils.URLEncode( request.key) + " HTTP/1.1");
             writer.WriteLine("P2P-Sender-List: " + GetStringOf(request.sentFrom));
             writer.WriteLine(HEADER_SPECIAL + ": " + this.local_uid);
             writer.WriteLine();

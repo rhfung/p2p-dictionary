@@ -25,12 +25,17 @@ package com.rhfung.P2PDictionary;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
+
 import com.rhfung.Interop.MemoryStream;
 
 
 class LogInstructions
 {
+    private SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
     private PrintStream m_writer;
     int m_min_level = 0;
     boolean m_autoFlush = false;
@@ -59,7 +64,7 @@ class LogInstructions
         {
         	synchronized (m_writer)
             {
-                m_writer.println(DateTimeNowTicks() + "t [" + level + "] "  + message);
+                m_writer.println(DateTimeNowTicks() + " [" + level + "] "  + message);
                 if (m_autoFlush && flushThisMessage)
                     m_writer.flush();
             }
@@ -78,7 +83,7 @@ class LogInstructions
         {
             synchronized (m_writer)
             {
-                m_writer.println(DateTimeNowTicks() + "t [" + level + "] " + " memory stream length " + message.getLength());
+                m_writer.println(DateTimeNowTicks() + " [" + level + "] " + " memory stream length " + message.getLength());
                 try {
 					m_writer.write(message.getBuffer());
 				} catch (IOException e) {
@@ -94,6 +99,6 @@ class LogInstructions
     
     private String DateTimeNowTicks()
     {
-    	return String.valueOf(Calendar.getInstance().getTimeInMillis());
+    	return  ISO8601DATEFORMAT.format(new Date());
     }
 }

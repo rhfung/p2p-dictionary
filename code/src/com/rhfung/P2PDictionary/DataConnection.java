@@ -209,23 +209,29 @@ class DataConnection
 
             if (!disposing)
             {
+                int counter = 0;
                 // spin wait
-                while (this.state != ConnectionState.Closed)
+                while (this.state != ConnectionState.Closed && counter < 50) // ~ 5 seconds
                 {
                     try {
 						Thread.sleep(P2PDictionary.SLEEP_WAIT_TO_CLOSE);
 					} catch (InterruptedException e) {
-						
 						break;
 					}
+                    counter++;
+                }
+
+                if (runThread != null && runThread.isAlive()) {
+                    WriteDebug("Halting connection thread");
+                    Kill();
                 }
             }
         }
 
 
-        /// <summary>
-        /// Closes the TCP connection immediately.
-        /// </summary>
+        /**
+         * Deprecated
+         */
         public void Abort()
         {
             if (this.state != ConnectionState.Closed )
@@ -255,8 +261,14 @@ class DataConnection
         public boolean Kill()
         {
             this.killBit = true;
-            Abort();
-            if (!Thread.currentThread().equals(runThread))
+
+            if (this.state != ConnectionState.Closed )
+            {
+                this.state = ConnectionState.Closing;
+                this.killBit = true;
+            }
+
+            if (!Thread.currentThread().equals(runThread) && runThread.isAlive())
             {
             	// TODO: check to see if this is the correct behaviour
                 runThread.interrupt();

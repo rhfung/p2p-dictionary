@@ -105,7 +105,7 @@ import com.rhfung.P2PDictionary.peers.PeerInterface;
         /**
          * Creates a dictionary object.
          */
-        public class Builder {
+        public static class Builder {
             private String m_description = "";
             private int m_port = 8765;
             private String m_namespace = "default";
@@ -981,6 +981,7 @@ import com.rhfung.P2PDictionary.peers.PeerInterface;
             // stop auto connect
             if (this.constructNwTimer != null)
             {
+                WriteDebug("Stopping auto-connect timer");
                 this.constructNwTimer.cancel();
                 this.constructNwTimer = null;
             }
@@ -988,6 +989,7 @@ import com.rhfung.P2PDictionary.peers.PeerInterface;
             // disconnect discovery
             if (this.discovery != null)
             {
+                WriteDebug("Unregistering discovery");
                 this.discovery.UnregisterServer();
                 this.discovery = null;
             }
@@ -996,6 +998,7 @@ import com.rhfung.P2PDictionary.peers.PeerInterface;
             {
                 if (this.runLoop != null)
                 {
+                    WriteDebug("Waiting for run loop to close");
                 	try
                 	{
                 		runLoop.join(1000);
@@ -1005,6 +1008,10 @@ import com.rhfung.P2PDictionary.peers.PeerInterface;
                 	}
                 	finally
                 	{
+                        if (runLoop.isAlive()) {
+                            WriteDebug("Killing run loop");
+                            runLoop.interrupt();
+                        }
                 		runLoop = null;
                 	}
                 }
@@ -1015,6 +1022,7 @@ import com.rhfung.P2PDictionary.peers.PeerInterface;
             // close all reader connections
             for (DataConnection c : closeConn)
             {
+                WriteDebug("Closing data connection");
                 c.Close(disposing);
             }
 
@@ -1028,6 +1036,7 @@ import com.rhfung.P2PDictionary.peers.PeerInterface;
                 {
                     if (thd.isAlive())
                     {
+                        WriteDebug("Waiting for sender thread to close " + thd.getName());
                     	// idle wait for thread to close
                     	try
                     	{
@@ -1035,8 +1044,12 @@ import com.rhfung.P2PDictionary.peers.PeerInterface;
                     	}
                     	catch(InterruptedException ex)
                     	{
-                    	
+
                     	}
+                        if (thd.isAlive()) {
+                            thd.interrupt();
+                            WriteDebug("Killing sender thread " + thd.getName());
+                        }
                     }
                 }
             }

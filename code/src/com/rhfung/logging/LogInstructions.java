@@ -101,13 +101,13 @@ public class LogInstructions
         {
             synchronized (m_writer)
             {
-                m_writer.println(DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] " + " memory stream length " + message.getLength());
+                m_writer.println(DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] " + " memory stream length=" + message.getLength() + "\n<<<");
                 try {
 					m_writer.write(message.getBuffer());
 				} catch (IOException e) {
 					m_writer.println(DateTimeNowTicks() + " error writing MemoryStream");
 				}
-                m_writer.println(DateTimeNowTicks() + "t [" + LevelStringFromInteger(level) + "] " + " end memory stream");
+                m_writer.println("\n>>>\n" + DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] " + " end memory stream");
 
                 if (m_autoFlush)
                     m_writer.flush();

@@ -61,7 +61,7 @@ import com.rhfung.Interop.NotImplementedException;
 import com.rhfung.Interop.StreamWriter;
 import com.rhfung.Interop.TcpClient;
 import com.rhfung.P2PDictionary.Encodings.ValueType;
-
+import org.apache.commons.lang3.StringUtils;
 
 
 class DataConnection
@@ -348,7 +348,7 @@ class DataConnection
             }
             else
             {
-                DataEntry entry = P2PDictionary.GetEntry( this.data, this.dataLock, key);
+                DataEntry entry = P2PDictionary.getEntry( this.data, this.dataLock, key);
                 if (!entry.subscribed)
                 {
                     throw new NotImplementedException();
@@ -796,7 +796,7 @@ class DataConnection
             else if (this.data.containsKey(resource))
             {
                 // handles current and expired data
-                DataEntry entry = P2PDictionary.GetEntry(this.data, this.dataLock, resource); //this.data[parts[1]];
+                DataEntry entry = P2PDictionary.getEntry(this.data, this.dataLock, resource); //this.data[parts[1]];
                 synchronized (entry)
                 {
                     if (entry.subscribed && !DataMissing.isSingleton(entry.value))
@@ -898,7 +898,7 @@ class DataConnection
                         // add to wire to send out
                         SendBroadcastMemory sendMsg = new SendBroadcastMemory(contentLocation, senders);
                         
-                        DataEntry get = P2PDictionary.GetEntry(this.data, this.dataLock, contentLocation);
+                        DataEntry get = P2PDictionary.getEntry(this.data, this.dataLock, contentLocation);
 
                         WriteMethodPush(contentLocation, senders, responsePath, 0, get.getMime(), get.GetETag(), get.isDeleted(), false, sendMsg.MemBuffer.createStreamWriter());
                         //Response(verb, contentLocation, senders, this.data[contentLocation], sendMsg.MemBuffer, false);
@@ -951,7 +951,7 @@ class DataConnection
                 if (instr.action != ResponseAction.DoNotForward)
                 {
                     // forward a HEAD message (because we didn't do it when we got a 200/HEAD notification)
-                    DataEntry get = P2PDictionary.GetEntry(this.data, this.dataLock, contentLocation);
+                    DataEntry get = P2PDictionary.getEntry(this.data, this.dataLock, contentLocation);
 
                     senders.add(this.local_uid);
                     SendBroadcastMemory sendMsg = new SendBroadcastMemory(contentLocation, senders);
@@ -1105,7 +1105,7 @@ class DataConnection
             if (status != ResponseAction.DoNotForward)
             {
                 // send a notification of deleted content immediately
-                DataEntry entry = P2PDictionary.GetEntry(this.data, this.dataLock, contentLocation);
+                DataEntry entry = P2PDictionary.getEntry(this.data, this.dataLock, contentLocation);
 
                 // add to wire to send out
                 senders.add(this.local_uid);// add my sender to the packet
@@ -1117,7 +1117,7 @@ class DataConnection
             if (responsePath != null)
             {
                 // well, i still have to send out this message because there is a path requested to follow
-                DataEntry entry = P2PDictionary.GetEntry(this.data, this.dataLock, contentLocation);
+                DataEntry entry = P2PDictionary.getEntry(this.data, this.dataLock, contentLocation);
 
                 SendMemoryToPeer sendMsg = new SendMemoryToPeer(entry.key, responsePath);
                 senders.add(this.local_uid);// add my sender to the packet
@@ -1129,7 +1129,6 @@ class DataConnection
         /**
          * 
          * @param reader reader to get bytes from
-         * @param arrayToFill initialized array to fill buffer
          */
         private static byte[]  ReadBytes(InputStreamReader reader, int length)
         {
@@ -1529,7 +1528,7 @@ class DataConnection
             boolean responded = false;
 
 
-            DataEntry e = P2PDictionary.GetEntry( this.data, this.dataLock, key);
+            DataEntry e = P2PDictionary.getEntry( this.data, this.dataLock, key);
             if (e != null)
             {
                 WriteDebug(this.local_uid + " following proxy path, found content for " + key);
@@ -2251,7 +2250,7 @@ throws JsonGenerationException, IOException
                 }
                 if (instruction.action != ResponseAction.DoNotForward)
                 {
-                    DataEntry get = P2PDictionary.GetEntry( this.data, this.dataLock, nsLineParts[0]);
+                    DataEntry get = P2PDictionary.getEntry( this.data, this.dataLock, nsLineParts[0]);
 
                     listOfSenders.add(this.local_uid);
                     SendBroadcastMemory msg = new SendBroadcastMemory(get.key , listOfSenders);
@@ -2862,28 +2861,21 @@ throws JsonGenerationException, IOException
             writer.Flush();
         }
 
-        /*
-        private void WriteError405(StreamWriter writer)
-        {
-            String payload = formatString(getFileInPackage(RESOURCE_ERROR), "405", GetErrorMessage(405));
-            writer.WriteLine("HTTP/1.1 405 Method Not Allowed");
-            writer.WriteLine("Allow: GET, HEAD");
-            writer.WriteLine(HEADER_SPECIAL + ": " + Integer.toString(this.local_uid));
-            writer.WriteLine("Content-Length: " + Integer.toString(payload.length()));
-            writer.WriteLine("Response-To: GET");
-            writer.WriteLine("P2P-Sender-List: " + GetStringOf(GetListOfThisLocalID()));
-            writer.WriteLine();
-            writer.Write(payload);
-            writer.WriteLine();
-            writer.Flush();
-        }
-        */
-        
         private static String URLEncode(String readableURL)
         {
+            if (readableURL == null) {
+                return readableURL;
+            }
+            if (readableURL.equals("/")) {
+                return readableURL;
+            }
         	try
         	{
-        		return URLEncoder.encode(readableURL, "UTF-8");
+                String[] parts = readableURL.split("/");
+                for (int i = 0; i < parts.length; i++) {
+                    parts[i] = URLEncoder.encode(parts[i], "utf-8");
+                }
+                return  StringUtils.join(parts, "/");
         	}
         	catch(Exception ex)
         	{
@@ -2893,9 +2885,19 @@ throws JsonGenerationException, IOException
         
         private static String URLDecode(String encodedURL)
         {
+            if (encodedURL == null) {
+                return encodedURL;
+            }
+            if (encodedURL.equals("/")) {
+                return encodedURL;
+            }
         	try
         	{
-        		return URLDecoder.decode(encodedURL, "UTF-8");
+                String[] parts = encodedURL.split("/");
+                for (int i = 0; i < parts.length; i++) {
+                    parts[i] = URLDecoder.decode(parts[i], "utf-8");
+                }
+        		return StringUtils.join(parts, "/");
         	}
         	catch(Exception ex)
         	{
@@ -3004,7 +3006,7 @@ throws JsonGenerationException, IOException
 
         private void WriteSimpleGetRequest(StreamWriter writer, DataHeader request)
         {
-            writer.WriteLine(GET + " " + URLEncode( request.key) + "  HTTP/1.1");
+            writer.WriteLine(GET + " " + URLEncode( request.key) + " HTTP/1.1");
             writer.WriteLine("P2P-Sender-List: " + GetStringOf(request.sentFrom));
             writer.WriteLine(HEADER_SPECIAL + ": " + this.local_uid);
             writer.WriteLine();

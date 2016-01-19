@@ -2,9 +2,12 @@ package com.rhfung.p2pd;
 import com.rhfung.P2PDictionary.P2PDictionary;
 import com.rhfung.P2PDictionary.peers.NoDiscovery;
 import com.rhfung.P2PDictionary.peers.WindowsBonjour;
+import com.rhfung.logging.LogInstructions;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Created by richard on 1/18/16.
@@ -20,6 +23,13 @@ public class Server {
         options.addOption("h", "help", true, "Show this help");
         options.addOption("debug", false, "Enable debugging mode");
         options.addOption("fulldebug", false, "Enable debugging mode");
+        options.addOption(Option.builder("c")
+                .longOpt("clients")
+                .argName("hosts")
+                .desc("Provide clients in the form hostname:port,hostname:port,... (separated by comma)")
+                .hasArgs()
+                .valueSeparator(',')
+                .build());
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
@@ -67,26 +77,52 @@ public class Server {
             }
         }
 
+        if (cmd.hasOption("clients")) {
+            String[] clientList = cmd.getOptionValues("clients");
+            for (String client: clientList) {
+                if (!client.contains(":")) {
+                    System.out.println("Invalid host:port pair " + client);
+                    return;
+                }
+            }
+        }
+
         final P2PDictionary dict = builder.build();
 
         if (cmd.hasOption("fulldebug")) {
-            dict.setDebugBuffer(System.out, 0, true);
+            dict.setDebugBuffer(System.out, LogInstructions.DEBUG, true);
         }
         else if (cmd.hasOption("debug")) {
-            dict.setDebugBuffer(System.out, 1, true);
+            dict.setDebugBuffer(System.out, LogInstructions.INFO, true);
         }
 
         Thread shutdown = new Thread(new Runnable() {
             @Override
             public void run() {
-                System.out.println("Closing server");
-                dict.close();
+            System.out.println("Closing server");
+            dict.close();
             }
         });
 
         Runtime.getRuntime().addShutdownHook(shutdown);
 
         System.out.println("Started server");
+
+        if (cmd.hasOption("clients")) {
+            String[] clientList = cmd.getOptionValues("clients");
+            for (String client: clientList) {
+                String parts[] = client.split(":", 2);
+                try {
+                    InetAddress address = InetAddress.getByName(parts[0]);
+                    int port = Integer.parseInt(parts[1]);
+                    System.out.println("Connecting to " + client);
+                    dict.openClient(address, port);
+                } catch (UnknownHostException exception) {
+                    System.out.println("Cannot connect to " + client);
+                }
+            }
+        }
+
         while (true) {
             try {
                 Thread.sleep(1000);

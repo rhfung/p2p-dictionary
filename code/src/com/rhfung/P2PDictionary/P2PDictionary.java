@@ -297,7 +297,7 @@ import com.rhfung.logging.LogInstructions;
     				
     				@Override
     				public void run() {
-    		            ConstructNetwork();
+    		            constructNetwork();
     				}
     			}, mSearchForClientsTimeout, mSearchForClientsTimeout);
 
@@ -490,32 +490,32 @@ import com.rhfung.logging.LogInstructions;
         // thread safe
         public boolean containsKey(String key)
         {
-            // return data.ContainsKey(GetFullKey(DATA_NAMESPACE ,key));
-            DataEntry e = GetEntry(this.data, this.dataLock, GetFullKey(DATA_NAMESPACE, _partition, key));
+            // return data.ContainsKey(getFullKey(DATA_NAMESPACE ,key));
+            DataEntry e = getEntry(this.data, this.dataLock, getFullKey(DATA_NAMESPACE, _partition, key));
             if (e == null)
                 return false;
             else
                 return e.subscribed;
         }
 
-        static String GetFullKey(String ns, String partition, String key)
+        static String getFullKey(String ns, String partition, String key)
         {
-        	return GetFullKeyBypass(ns, partition, key);
+        	return getFullKeyBypass(ns, partition, key);
         }
         
-        static String GetFullKeyBypass(String ns, String partition, String key)
+        static String getFullKeyBypass(String ns, String partition, String key)
         {
             if (key.startsWith(ns))
-                throw new IndexOutOfBoundsException("GetFullKey should not operate on keys within namespace");
+                throw new IndexOutOfBoundsException("getFullKey should not operate on keys within namespace");
             return ns + "/" + partition + "/" + key; 
         }
 
-        static String GetUserKey(String ns, String partition, String fullKey)
+        static String getUserKey(String ns, String partition, String fullKey)
         {
             if (IsFullKeyInNamespace(ns,partition,fullKey))
                 return fullKey.substring(ns.length() + 1 + partition.length() + 1);
             else
-                throw new IndexOutOfBoundsException("GetUserKey should not operate on keys outside of namespace");
+                throw new IndexOutOfBoundsException("getUserKey should not operate on keys outside of namespace");
         }
 
         static boolean IsFullKeyInNamespace(String ns, String partition, String fullKey)
@@ -531,7 +531,7 @@ import com.rhfung.logging.LogInstructions;
         /// <param name="fullKey"></param>
         /// <returns></returns>
         /// <remarks>called in both P2PDictionary and DataConnection</remarks>
-        static DataEntry GetEntry(Map<String,DataEntry> data, ReadWriteLock rwl, String fullKey)
+        static DataEntry getEntry(Map<String,DataEntry> data, ReadWriteLock rwl, String fullKey)
         {
             rwl.readLock().lock();
             DataEntry entry = null;
@@ -562,13 +562,13 @@ import com.rhfung.logging.LogInstructions;
         public  Object getWithTimeout(String key, int msTimeout ) throws SubscriptionException
         {
             int sleepLength = 0;
-            DataEntry e = GetEntry(this.data, this.dataLock ,GetFullKey(DATA_NAMESPACE, _partition, key));
+            DataEntry e = getEntry(this.data, this.dataLock , getFullKey(DATA_NAMESPACE, _partition, key));
             while(sleepLength < msTimeout && e == null)
             {
             	try
             	{
 	                Thread.sleep(SLEEP_USER_RETRY_READ);
-	                e = GetEntry(this.data, this.dataLock, GetFullKey(DATA_NAMESPACE, _partition, key));
+	                e = getEntry(this.data, this.dataLock, getFullKey(DATA_NAMESPACE, _partition, key));
 	                sleepLength += SLEEP_USER_RETRY_READ;
             	}
             	catch(Exception ex)
@@ -597,13 +597,13 @@ import com.rhfung.logging.LogInstructions;
         public Object tryGetValue(String key, int msTimeout, Object defaultValue )
         {
             int sleepLength = 0;
-            DataEntry e = GetEntry(this.data, this.dataLock, GetFullKey(DATA_NAMESPACE, _partition, key));
+            DataEntry e = getEntry(this.data, this.dataLock, getFullKey(DATA_NAMESPACE, _partition, key));
             while (sleepLength < msTimeout && e == null)
             {
             	try
             	{
 	                Thread.sleep(P2PDictionary.SLEEP_USER_RETRY_READ);
-	                e = GetEntry(this.data, this.dataLock, GetFullKey(DATA_NAMESPACE, _partition, key));
+	                e = getEntry(this.data, this.dataLock, getFullKey(DATA_NAMESPACE, _partition, key));
 	                sleepLength += P2PDictionary.SLEEP_USER_RETRY_READ;
             	}
             	catch(InterruptedException ex)
@@ -629,7 +629,7 @@ import com.rhfung.logging.LogInstructions;
         {
             
                 // todo: decide to crash or return null
-                DataEntry e = GetEntry(this.data, this.dataLock, GetFullKey(DATA_NAMESPACE, _partition, key));
+                DataEntry e = getEntry(this.data, this.dataLock, getFullKey(DATA_NAMESPACE, _partition, key));
                 if (!e.subscribed)
                 {
                     throw new SubscriptionException("Not subscribed to key");
@@ -656,8 +656,8 @@ import com.rhfung.logging.LogInstructions;
             try
             {
                 
-                if (this.data.containsKey(GetFullKey(DATA_NAMESPACE, _partition, key)))
-                    get = this.data.get(GetFullKey(DATA_NAMESPACE, _partition, key));
+                if (this.data.containsKey(getFullKey(DATA_NAMESPACE, _partition, key)))
+                    get = this.data.get(getFullKey(DATA_NAMESPACE, _partition, key));
 
                 if (get != null)
                 {
@@ -672,7 +672,7 @@ import com.rhfung.logging.LogInstructions;
                     {
                         oldValue = get.value; // save old value for notificatoin event
 
-                        DataEntry entry = data.get((GetFullKey(DATA_NAMESPACE, _partition, key)));
+                        DataEntry entry = data.get((getFullKey(DATA_NAMESPACE, _partition, key)));
                         
                         get.lastOwnerID = _localUID;
                         get.lastOwnerRevision = entry.lastOwnerRevision + 1;
@@ -683,7 +683,7 @@ import com.rhfung.logging.LogInstructions;
                         get.DetectTypeFromValue();
                     }
                     // if some pattern does not have this subscription, then add it automatically
-                    if (!subscription.isSubscribed(GetFullKey(DATA_NAMESPACE, _partition, key)))
+                    if (!subscription.isSubscribed(getFullKey(DATA_NAMESPACE, _partition, key)))
                     {
                         addSubscription(key);
                     }
@@ -695,9 +695,9 @@ import com.rhfung.logging.LogInstructions;
                     try
                     {
                         reason = NotificationReason.Add;
-                        get = new DataEntry(GetFullKey(DATA_NAMESPACE, _partition, key), value, new ETag(_localUID, 0), ListInt.createList( this._localUID ), true);
+                        get = new DataEntry(getFullKey(DATA_NAMESPACE, _partition, key), value, new ETag(_localUID, 0), ListInt.createList( this._localUID ), true);
 
-                        data.put(GetFullKey(DATA_NAMESPACE, _partition, key), get);
+                        data.put(getFullKey(DATA_NAMESPACE, _partition, key), get);
                     }
                     finally 
                     {
@@ -706,9 +706,9 @@ import com.rhfung.logging.LogInstructions;
                     }
 
                     // if some pattern does not have this subscription, then add it automatically
-                    if (!subscription.isSubscribed(GetFullKey(DATA_NAMESPACE, _partition, key)))
+                    if (!subscription.isSubscribed(getFullKey(DATA_NAMESPACE, _partition, key)))
                     {
-                        AddSubscription(key, SubscriptionInitiator.AutoAddKey);
+                        addSubscription(key, SubscriptionInitiator.AutoAddKey);
                     }
                 }
 
@@ -724,7 +724,7 @@ import com.rhfung.logging.LogInstructions;
             // and then we handle sending it here
             if (connections.size() > 0 && !this.killbit)
             {
-                SendMemoryToPeer msg = connections.get(0).CreateResponseMessage(GetFullKey(DATA_NAMESPACE, _partition, key));
+                SendMemoryToPeer msg = connections.get(0).CreateResponseMessage(getFullKey(DATA_NAMESPACE, _partition, key));
                 SendBroadcastMemory msg2 = new SendBroadcastMemory(msg.ContentLocation, ListInt.createList(this.getLocalID()));
                 msg2.MemBuffer = msg.MemBuffer;
                 onBroadcastToWire(msg2);
@@ -769,14 +769,14 @@ import com.rhfung.logging.LogInstructions;
          */
         public Object remove(String key)
         {
-            DataEntry get = GetEntry(this.data, this.dataLock, GetFullKey(DATA_NAMESPACE, _partition, key));
+            DataEntry get = getEntry(this.data, this.dataLock, getFullKey(DATA_NAMESPACE, _partition, key));
             if (get != null)
             {
             	Object lastValue = null;
                 synchronized (get)
                 {
                     get.lastOwnerID = _localUID;
-                    get.lastOwnerRevision = data.get(GetFullKey(DATA_NAMESPACE, _partition, key)).lastOwnerRevision + 1;
+                    get.lastOwnerRevision = data.get(getFullKey(DATA_NAMESPACE, _partition, key)).lastOwnerRevision + 1;
                     lastValue = get.value;
                     get.Delete();
                     get.subscribed = true;
@@ -784,7 +784,7 @@ import com.rhfung.logging.LogInstructions;
                 }
 
                 // if some pattern does not have this subscription, then add it automatically
-                if (!subscription.isSubscribed(GetFullKey(DATA_NAMESPACE, _partition, key)))
+                if (!subscription.isSubscribed(getFullKey(DATA_NAMESPACE, _partition, key)))
                 {
                     addSubscription(key);
                 }
@@ -794,7 +794,7 @@ import com.rhfung.logging.LogInstructions;
                 // and then we handle sending it here
                 if (connections.size() > 0 && !this.killbit)
                 {
-                    SendMemoryToPeer msg = connections.get(0).CreateResponseMessage(GetFullKey(DATA_NAMESPACE, _partition, key));
+                    SendMemoryToPeer msg = connections.get(0).CreateResponseMessage(getFullKey(DATA_NAMESPACE, _partition, key));
                     SendBroadcastMemory msg2 = new SendBroadcastMemory(msg.ContentLocation, ListInt.createList(this.getLocalID()));
                     msg2.MemBuffer = msg.MemBuffer;
                     onBroadcastToWire(msg2);
@@ -1072,7 +1072,7 @@ import com.rhfung.logging.LogInstructions;
          * @param port
          * @return true if a TCP connection to the client is possible, false otherwise
          */
-        public boolean OpenClient(final java.net.InetAddress addr, final int port)
+        public boolean openClient(final java.net.InetAddress addr, final int port)
         {	
         	
         	try
@@ -1423,7 +1423,7 @@ import com.rhfung.logging.LogInstructions;
          */
         void addSubscription(String regularExpression)
         {
-            subscription.AddSubscription(GetFullKey(DATA_NAMESPACE, _partition, regularExpression), SubscriptionInitiator.Manual);
+            subscription.AddSubscription(getFullKey(DATA_NAMESPACE, _partition, regularExpression), SubscriptionInitiator.Manual);
         }
 
 
@@ -1436,9 +1436,9 @@ import com.rhfung.logging.LogInstructions;
          * @param regularExpression
          * @param initiator
          */
-        void AddSubscription(String regularExpression, SubscriptionInitiator initiator)
+        void addSubscription(String regularExpression, SubscriptionInitiator initiator)
         {
-            subscription.AddSubscription(GetFullKeyBypass(DATA_NAMESPACE, _partition, regularExpression), initiator);
+            subscription.AddSubscription(getFullKeyBypass(DATA_NAMESPACE, _partition, regularExpression), initiator);
         }
 
         /// <summary>
@@ -1451,7 +1451,7 @@ import com.rhfung.logging.LogInstructions;
          */
         public void removeSubscription(String regularExpression)
         {
-            subscription.RemoveSubscription(GetFullKeyBypass(DATA_NAMESPACE, _partition,regularExpression));
+            subscription.RemoveSubscription(getFullKeyBypass(DATA_NAMESPACE, _partition,regularExpression));
         }
 
         /// <summary>
@@ -1537,7 +1537,7 @@ import com.rhfung.logging.LogInstructions;
          * Searches for peers on the network using Apple Bonjour
          * @return true if the network is constructed
          */
-        public boolean ConstructNetwork()
+        public boolean constructNetwork()
         {
             
             ListInt keys ;
@@ -1593,7 +1593,7 @@ import com.rhfung.logging.LogInstructions;
                 }
                 synchronized (nextConnInfo)
                 {
-                    this.OpenClient(nextConnInfo.get(0).Address, nextConnInfo.get(0).Port);
+                    this.openClient(nextConnInfo.get(0).Address, nextConnInfo.get(0).Port);
                 }
                 constructNwNextPeer = nextUID;
             }
@@ -1618,7 +1618,7 @@ import com.rhfung.logging.LogInstructions;
                 }
                 synchronized (nextConnInfo)
                 {
-                    this.OpenClient(nextConnInfo.get(0).Address, nextConnInfo.get(0).Port);
+                    this.openClient(nextConnInfo.get(0).Address, nextConnInfo.get(0).Port);
                 }
                 constructNwRandomPeer = keys.get(pickNum);
             }
@@ -1724,7 +1724,7 @@ import com.rhfung.logging.LogInstructions;
         {
                 try
                 {
-                    NotificationEventArgs newarg = new NotificationEventArgs(args._Entry, GetUserKey(DATA_NAMESPACE, _partition, args.getKey() ), args.getReason(), args.getValue());
+                    NotificationEventArgs newarg = new NotificationEventArgs(args._Entry, getUserKey(DATA_NAMESPACE, _partition, args.getKey() ), args.getReason(), args.getValue());
                     callback.Notification(newarg);
                 }
                 catch(Exception ex)
@@ -1914,9 +1914,9 @@ import com.rhfung.logging.LogInstructions;
             {
                 for ( String k : this.data.keySet())
                 {
-                	//this.data.Where(x => IsFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => GetUserKey(DATA_NAMESPACE, _namespace, x.Key)));
+                	//this.data.Where(x => IsFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => getUserKey(DATA_NAMESPACE, _namespace, x.Key)));
                 	if (IsFullKeyInNamespace(DATA_NAMESPACE, _partition, k))
-                		retValue.add( GetUserKey(DATA_NAMESPACE, _partition, k));
+                		retValue.add( getUserKey(DATA_NAMESPACE, _partition, k));
                 }
                 
             }
@@ -1933,7 +1933,7 @@ import com.rhfung.logging.LogInstructions;
 //          dataLock.EnterReadLock();
 //          try
 //          {
-//              retValue = new List<KeyValuePair<string, object>>(this.data.Where(x => IsFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => new KeyValuePair<string, object>(GetUserKey(DATA_NAMESPACE, _namespace, x.Key), x.Value.value))).GetEnumerator();
+//              retValue = new List<KeyValuePair<string, object>>(this.data.Where(x => IsFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => new KeyValuePair<string, object>(getUserKey(DATA_NAMESPACE, _namespace, x.Key), x.Value.value))).GetEnumerator();
 //          }
 //          finally
 //          {
@@ -1970,10 +1970,10 @@ import com.rhfung.logging.LogInstructions;
             {
                 for ( Entry<String, DataEntry> k : this.data.entrySet())
                 {
-                	//this.data.Where(x => IsFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => GetUserKey(DATA_NAMESPACE, _namespace, x.Key)));
+                	//this.data.Where(x => IsFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => getUserKey(DATA_NAMESPACE, _namespace, x.Key)));
                 	if (IsFullKeyInNamespace(DATA_NAMESPACE, _partition, k.getKey()))
                 	{
-                		final String key = GetUserKey(DATA_NAMESPACE, _partition, k.getKey());
+                		final String key = getUserKey(DATA_NAMESPACE, _partition, k.getKey());
                 		final Object value = k.getValue().value;
                 		java.util.Map.Entry<String, Object> entry = new java.util.Map.Entry<String, Object>() {
                 			@Override
@@ -2012,6 +2012,6 @@ import com.rhfung.logging.LogInstructions;
 		@Override
 		public String getFullKey(String userKey) {
 			// TODO Auto-generated method stub
-			return P2PDictionary.GetFullKey(DATA_NAMESPACE, this._partition, userKey);
+			return P2PDictionary.getFullKey(DATA_NAMESPACE, this._partition, userKey);
 		}
 }

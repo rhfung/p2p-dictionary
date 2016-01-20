@@ -23,18 +23,18 @@ package com.rhfung.P2PDictionary;
 //THE SOFTWARE.
 
 public enum SubscriptionInitiator {
-	// / <summary>
-	// / Key was added by assignment in the dictionary
-	// / </summary>
+	/**
+	 * Key was added by assignment in the dictionary
+	*/
 	AutoAddKey,
 
-	// / <summary>
-	// / Key was added by proxy path between peers
-	// / </summary>
+	/**
+	 * Key was added by proxy path between peers
+	 */
 	AutoProxyKey,
 
-	// / <summary>
-	// / Key was added by the user
-	// / </summary>
+	/**
+	 * Key was added by the user
+	*/
 	Manual
 }

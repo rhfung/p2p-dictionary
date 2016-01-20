@@ -591,10 +591,11 @@ class DataConnection
 
                         if (verb.equals(GET))
                         {
-                            if (responseCode.equals(RESPONSECODE_DELETED))
+                            if (responseCode.equals(RESPONSECODE_DELETED)) {
                                 verb = DELETE;
-                            else
+                            } else {
                                 verb = PUT;
+                            }
                         }
                         else if (verb.equals(HEAD))
                         {
@@ -804,18 +805,8 @@ class DataConnection
                     }
                     else
                     {
-                        // tell the caller to look somewhere else
-                        //if (IsWebClientConnected)
-                        //{
                         // tell the caller that a proxy must be used
                         ResponseCode(memBuffer.createStreamWriter(), resource, GetListOfThisLocalID(), entry.lastOwnerID, entry.lastOwnerRevision, 305);
-                        //}
-                        //else
-                        //{
-
-                        //    // tell the caller that a proxy must be used
-                        //    ResponseCode(bufferedOutput, parts[1], GetListOfThisLocalID(), headers["P2P-Path"], entry.lastOwnerID, entry.lastOwnerRevision, 305);
-                        //}
                     }
                 }
             }
@@ -1960,6 +1951,11 @@ class DataConnection
             return headers;
         }
 
+        private static final String PERMISSION_SUBSCRIBED_MISSING = "-W";
+        private static final String PERMISSION_SUBSCRIBED_AVAILABLE = "RW";
+        private static final String PERMISSION_NOT_SUBSCRIBED_AVAILABLE = "=-";
+        private static final String PERMISSION_NOT_SUBSCRIBED_MISSING = "--";
+
         /// <summary>
         /// Gets a text file that is in the following format:
         /// 
@@ -1997,11 +1993,11 @@ class DataConnection
                             
                             if (DataMissing.isSingleton(d.value))
                             {
-                                permissions = "-W";
+                                permissions = PERMISSION_SUBSCRIBED_MISSING;
                             }
                             else
                             {
-                                permissions = "RW";
+                                permissions = PERMISSION_SUBSCRIBED_AVAILABLE;
                             }
                         }
                         else
@@ -2009,11 +2005,11 @@ class DataConnection
 
                             if (DataMissing.isSingleton(d.value))
                             {
-                                permissions = "--";
+                                permissions = PERMISSION_NOT_SUBSCRIBED_MISSING;
                             }
                             else
                             {
-                                permissions = "=-";
+                                permissions = PERMISSION_NOT_SUBSCRIBED_AVAILABLE;
 
                             }
 
@@ -2123,11 +2119,11 @@ throws JsonGenerationException, IOException
         
         if (DataMissing.isSingleton(d.value))
         {
-            jg.writeObjectField("status", "-W");
+            jg.writeObjectField("status", PERMISSION_SUBSCRIBED_MISSING);
         }
         else
         {
-        	jg.writeObjectField("status","RW");
+        	jg.writeObjectField("status", PERMISSION_SUBSCRIBED_AVAILABLE);
         }
     }
     else
@@ -2135,11 +2131,11 @@ throws JsonGenerationException, IOException
 
         if (DataMissing.isSingleton(d.value))
         {
-        	jg.writeObjectField("status","--");
+        	jg.writeObjectField("status",PERMISSION_NOT_SUBSCRIBED_MISSING);
         }
         else
         {
-        	jg.writeObjectField("status","=-");
+        	jg.writeObjectField("status",PERMISSION_NOT_SUBSCRIBED_AVAILABLE);
 
         }
 

@@ -20,6 +20,15 @@ public class Server {
         options.addOption("t", "timespan", true, "Search timespan for clients");
         options.addOption("d", "discovery", true, "Backend discovery mechanism: none, win-bonjour");
         options.addOption("h", "help", true, "Show this help");
+        options.addOption(Option.builder()
+                .longOpt("pattern")
+                .hasArg()
+                .desc("Monitors a specific pattern using wildcard (*), single character (?), and number (#) placeholders; default to *")
+                .build());
+        options.addOption(Option.builder()
+                .longOpt("nopattern")
+                .desc("Monitors no patterns")
+                .build());
         options.addOption("debug", false, "Enable debugging mode");
         options.addOption("fulldebug", false, "Enable debugging mode");
         options.addOption(Option.builder("c")
@@ -93,6 +102,18 @@ public class Server {
         }
         else if (cmd.hasOption("debug")) {
             dict.setDebugBuffer(System.out, LogInstructions.INFO, true);
+        }
+
+        if (cmd.hasOption("nopattern")) {
+            // do nothing
+            if (cmd.hasOption("pattern")) {
+                System.out.println("Ignoring pattern match for " + cmd.getOptionValue("pattern"));
+            }
+        }
+        else if (cmd.hasOption("pattern")) {
+            dict.addSubscription(cmd.getOptionValue("pattern"));
+        } else {
+            dict.addSubscription("*");
         }
 
         Thread shutdown = new Thread(new Runnable() {

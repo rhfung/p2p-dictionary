@@ -30,7 +30,7 @@ import java.util.Vector;
  * @author Richard
  *
  */
-class Subscription  {
+public class Subscription  {
 	private List<String> subscriptions;
 	private ISubscriptionChanged notifier;
 
@@ -53,7 +53,9 @@ class Subscription  {
         {
             synchronized (subscriptions)
             {
-                subscriptions.add(regularExpression);
+                if (!subscriptions.contains(regularExpression)) {
+                    subscriptions.add(regularExpression);
+                }
             }
             notifier.onAddedSubscription(this, regularExpression, initiator);
         }
@@ -62,19 +64,38 @@ class Subscription  {
         {
             synchronized (subscriptions)
             {
-                subscriptions.remove(regularExpression);
+                if (subscriptions.contains(regularExpression)) {
+                    subscriptions.remove(regularExpression);
+                }
             }
             notifier.onRemovedSubscription(this, regularExpression);
         }
 
-	public boolean isSubscribed(String regularExpression)
+    /**
+     * Checks against patterns defined in
+     * ? Any single character
+     * * Zero or more characters
+     * # Any single digit (0–9)
+     * [charlist] Any single character in charlist
+     * [!charlist] Any single character not in charlist
+
+     * @param key
+     * @return
+     */
+	public boolean isSubscribed(String key)
         {
             synchronized (subscriptions)
             {
             	for (String s : subscriptions)
             	{
-            		if (s.matches(regularExpression))
-            			return true;
+                    String regexSubscription = s.replace("/", "\\/"); // safeguard paths
+                    regexSubscription = regexSubscription.replace(".", "\\.");  // remove dot operator
+                    regexSubscription = regexSubscription.replace("*", ".*");   // wildcard search
+                    regexSubscription = regexSubscription.replace("?", ".");    // single character
+                    regexSubscription = regexSubscription.replace("#", "\\d");  // digit
+            		if (key.matches(regexSubscription)) {
+                        return true;
+                    }
             	}
             }
             

@@ -22,7 +22,7 @@ package com.rhfung.P2PDictionary;
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-interface ISubscriptionChanged {
+public interface ISubscriptionChanged {
 	void onAddedSubscription(Subscription s, String wildcardString,
 			SubscriptionInitiator initiator);
 

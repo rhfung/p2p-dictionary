@@ -79,7 +79,7 @@ import com.rhfung.logging.LogInstructions;
         Timer constructNwTimer;
         ServerSocket listener; 
 
-        Hashtable<String, DataEntry> data;
+        DictionaryData data;
         Hashtable<Integer, Integer> messages;
         ReadWriteLock dataLock;
 
@@ -257,7 +257,7 @@ import com.rhfung.logging.LogInstructions;
             this._defaultKey = "";
 
             // load data from caller
-            this.data = new Hashtable<String, DataEntry>();
+            this.data = new DictionaryData();
             this.dataLock = new ReentrantReadWriteLock();
             this.messages = new Hashtable<Integer, Integer>();
 
@@ -656,8 +656,9 @@ import com.rhfung.logging.LogInstructions;
             try
             {
                 
-                if (this.data.containsKey(getFullKey(DATA_NAMESPACE, _partition, key)))
+                if (this.data.containsKey(getFullKey(DATA_NAMESPACE, _partition, key))) {
                     get = this.data.get(getFullKey(DATA_NAMESPACE, _partition, key));
+                }
 
                 if (get != null)
                 {
@@ -682,16 +683,9 @@ import com.rhfung.logging.LogInstructions;
 
                         get.DetectTypeFromValue();
                     }
-                    // if some pattern does not have this subscription, then add it automatically
-                    if (!subscription.isSubscribed(getFullKey(DATA_NAMESPACE, _partition, key)))
-                    {
-                        addSubscription(key);
-                    }
                 }
                 else
                 {
-                    
-
                     try
                     {
                         reason = NotificationReason.Add;
@@ -704,12 +698,12 @@ import com.rhfung.logging.LogInstructions;
                         dataLock.writeLock().unlock();
                         upgraded = false;
                     }
+                }
 
-                    // if some pattern does not have this subscription, then add it automatically
-                    if (!subscription.isSubscribed(getFullKey(DATA_NAMESPACE, _partition, key)))
-                    {
-                        addSubscription(key, SubscriptionInitiator.AutoAddKey);
-                    }
+                // if some pattern does not have this subscription, then add it automatically
+                if (!subscription.isSubscribed(getFullKey(DATA_NAMESPACE, _partition, key)))
+                {
+                    addSubscription(key, SubscriptionInitiator.AutoAddKey);
                 }
 
             }
@@ -1419,11 +1413,11 @@ import com.rhfung.logging.LogInstructions;
         /// <param name="wildcardString">Case-sensitive string that includes *, ?, and [] for ranges of characters to match.</param>
         /**
          *  adds a subscription that matches the pattern.
-         * @param regularExpression
+         * @param wildcardString
          */
-        void addSubscription(String regularExpression)
+        public void addSubscription(String wildcardString)
         {
-            subscription.AddSubscription(getFullKey(DATA_NAMESPACE, _partition, regularExpression), SubscriptionInitiator.Manual);
+            subscription.AddSubscription(getFullKey(DATA_NAMESPACE, _partition, wildcardString), SubscriptionInitiator.Manual);
         }
 
 
@@ -1433,12 +1427,12 @@ import com.rhfung.logging.LogInstructions;
         /// <param name="wildcardString">Case-sensitive string that includes *, ?, and [] for ranges of characters to match.</param>
         /**
          * Adds a subscription that matches the key pattern.
-         * @param regularExpression
+         * @param wildcardString
          * @param initiator
          */
-        void addSubscription(String regularExpression, SubscriptionInitiator initiator)
+        void addSubscription(String wildcardString, SubscriptionInitiator initiator)
         {
-            subscription.AddSubscription(getFullKeyBypass(DATA_NAMESPACE, _partition, regularExpression), initiator);
+            subscription.AddSubscription(getFullKeyBypass(DATA_NAMESPACE, _partition, wildcardString), initiator);
         }
 
         /// <summary>
@@ -1447,11 +1441,11 @@ import com.rhfung.logging.LogInstructions;
         /// <param name="wildcardKey">The exact string that was added to the subscription.</param>
         /**
          * removes a previously subscription that matches the pattern.
-         * @param regularExpression The exact string that was added to the subscription.
+         * @param wildcardString The exact string that was added to the subscription.
          */
-        public void removeSubscription(String regularExpression)
+        public void removeSubscription(String wildcardString)
         {
-            subscription.RemoveSubscription(getFullKeyBypass(DATA_NAMESPACE, _partition,regularExpression));
+            subscription.RemoveSubscription(getFullKeyBypass(DATA_NAMESPACE, _partition,wildcardString));
         }
 
         /// <summary>

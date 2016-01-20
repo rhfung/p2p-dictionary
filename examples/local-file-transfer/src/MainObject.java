@@ -2,10 +2,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
+import java.net.InetAddress;
 
 import com.rhfung.P2PDictionary.P2PDictionary;
-import com.rhfung.P2PDictionary.P2PDictionaryClientMode;
-import com.rhfung.P2PDictionary.P2PDictionaryServerMode;
 
 
 public class MainObject {
@@ -15,12 +14,13 @@ public class MainObject {
 		
 		final P2PDictionary dict = (new P2PDictionary.Builder())
 			.setDescription("Local File Transfer")
-			.setPort(8765)
+			.setPort(8800)
 			.setNamespace("lft")
 			.setClientSearchTimespan(1500)
 			.build();
 		
 		dict.setDebugBuffer(System.out, 1, true);
+		dict.addSubscription("*");
 		dict.setDefaultKey("index.html");
 		dict.put("index.html", new com.rhfung.P2PDictionary.MIMEByteObject("text/html", getFileInPackage("/app-index.html")));
 		dict.put("app-index.js", new com.rhfung.P2PDictionary.MIMEByteObject("text/html", getFileInPackage("/app-index.js")));
@@ -28,6 +28,13 @@ public class MainObject {
 		dict.put("format.css", new com.rhfung.P2PDictionary.MIMEByteObject("text/css", getFileInPackage("/format.css")));
 		dict.put("underscore.js", new com.rhfung.P2PDictionary.MIMEByteObject("application/javascript", getFileInPackage("/underscore.js")));
 		dict.put("jquery-1.7.2.js", new com.rhfung.P2PDictionary.MIMEByteObject("application/javascript", getFileInPackage("/jquery-1.7.2.js")));
+
+		// make it interesting by connecting to another client
+//		try {
+//			dict.openClient(InetAddress.getByName("localhost"), 8765);
+//		} catch(Exception ex) {
+//
+//		}
 
 		Thread shutdown = new Thread(new Runnable() {
 			@Override

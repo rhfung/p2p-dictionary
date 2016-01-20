@@ -2,7 +2,7 @@ package com.rhfung.P2PDictionary.callback;
 
 import com.rhfung.P2PDictionary.ConnectionEventArgs;
 import com.rhfung.P2PDictionary.NotificationEventArgs;
-import com.rhfung.P2PDictionary.SubscriptionEventArgs;
+import com.rhfung.P2PDictionary.subscription.SubscriptionEventArgs;
 
 /**
  * Created by richard on 1/18/16.

@@ -24,7 +24,7 @@ package com.rhfung.P2PDictionary.callback;
 
 import com.rhfung.P2PDictionary.ConnectionEventArgs;
 import com.rhfung.P2PDictionary.NotificationEventArgs;
-import com.rhfung.P2PDictionary.SubscriptionEventArgs;
+import com.rhfung.P2PDictionary.subscription.SubscriptionEventArgs;
 
 public abstract class IDictionaryCallback {
     abstract public void SubscriptionChanged(SubscriptionEventArgs e);

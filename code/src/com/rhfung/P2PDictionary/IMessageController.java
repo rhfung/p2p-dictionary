@@ -25,6 +25,7 @@ package com.rhfung.P2PDictionary;
 import java.util.List;
 
 import com.rhfung.Interop.EndPointMetadata;
+import com.rhfung.P2PDictionary.subscription.SubscriptionEventArgs;
 
 interface IMessageController {
     /// <summary>

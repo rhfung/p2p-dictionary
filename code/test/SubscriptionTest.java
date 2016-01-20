@@ -1,5 +1,5 @@
-import com.rhfung.P2PDictionary.ISubscriptionChanged;
-import com.rhfung.P2PDictionary.Subscription;
+import com.rhfung.P2PDictionary.subscription.ISubscriptionChanged;
+import com.rhfung.P2PDictionary.subscription.Subscription;
 import com.rhfung.P2PDictionary.SubscriptionInitiator;
 import junit.framework.TestCase;
 

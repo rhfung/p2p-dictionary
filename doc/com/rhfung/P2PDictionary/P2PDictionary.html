@@ -271,7 +271,7 @@ implements java.util.Map&lt;java.lang.String,java.lang.Object&gt;</pre>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>com.rhfung.P2PDictionary.Subscription</code></td>
+<td class="colFirst"><code>com.rhfung.P2PDictionary.subscription.Subscription</code></td>
 <td class="colLast"><code><strong><a href="../../../com/rhfung/P2PDictionary/P2PDictionary.html#getSubscriptions()">getSubscriptions</a></strong>()</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
@@ -303,7 +303,7 @@ implements java.util.Map&lt;java.lang.String,java.lang.Object&gt;</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../com/rhfung/P2PDictionary/P2PDictionary.html#onAddedSubscription(com.rhfung.P2PDictionary.Subscription, java.lang.String, com.rhfung.P2PDictionary.SubscriptionInitiator)">onAddedSubscription</a></strong>(com.rhfung.P2PDictionary.Subscription&nbsp;s,
+<td class="colLast"><code><strong><a href="../../../com/rhfung/P2PDictionary/P2PDictionary.html#onAddedSubscription(com.rhfung.P2PDictionary.subscription.Subscription, java.lang.String, com.rhfung.P2PDictionary.SubscriptionInitiator)">onAddedSubscription</a></strong>(com.rhfung.P2PDictionary.subscription.Subscription&nbsp;s,
                    java.lang.String&nbsp;wildcardString,
                    <a href="../../../com/rhfung/P2PDictionary/SubscriptionInitiator.html" title="enum in com.rhfung.P2PDictionary">SubscriptionInitiator</a>&nbsp;initiator)</code>
 <div class="block">Should not be called by client.</div>
@@ -347,7 +347,7 @@ implements java.util.Map&lt;java.lang.String,java.lang.Object&gt;</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../com/rhfung/P2PDictionary/P2PDictionary.html#onRemovedSubscription(com.rhfung.P2PDictionary.Subscription, java.lang.String)">onRemovedSubscription</a></strong>(com.rhfung.P2PDictionary.Subscription&nbsp;s,
+<td class="colLast"><code><strong><a href="../../../com/rhfung/P2PDictionary/P2PDictionary.html#onRemovedSubscription(com.rhfung.P2PDictionary.subscription.Subscription, java.lang.String)">onRemovedSubscription</a></strong>(com.rhfung.P2PDictionary.subscription.Subscription&nbsp;s,
                      java.lang.String&nbsp;wildcardString)</code>
 <div class="block">Should not be called by client.</div>
 </td>
@@ -366,7 +366,7 @@ implements java.util.Map&lt;java.lang.String,java.lang.Object&gt;</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../com/rhfung/P2PDictionary/P2PDictionary.html#onSubscriptionChanged(com.rhfung.P2PDictionary.SubscriptionEventArgs)">onSubscriptionChanged</a></strong>(<a href="../../../com/rhfung/P2PDictionary/SubscriptionEventArgs.html" title="class in com.rhfung.P2PDictionary">SubscriptionEventArgs</a>&nbsp;args)</code>
+<td class="colLast"><code><strong><a href="../../../com/rhfung/P2PDictionary/P2PDictionary.html#onSubscriptionChanged(com.rhfung.P2PDictionary.subscription.SubscriptionEventArgs)">onSubscriptionChanged</a></strong>(<a href="../../../com/rhfung/P2PDictionary/SubscriptionEventArgs.html" title="class in com.rhfung.P2PDictionary">SubscriptionEventArgs</a>&nbsp;args)</code>
 <div class="block">Should not be called by client.</div>
 </td>
 </tr>
@@ -890,19 +890,19 @@ implements java.util.Map&lt;java.lang.String,java.lang.Object&gt;</pre>
 <pre>public&nbsp;com.rhfung.P2PDictionary.Subscription&nbsp;getSubscriptions()</pre>
 </li>
 </ul>
-<a name="onAddedSubscription(com.rhfung.P2PDictionary.Subscription, java.lang.String, com.rhfung.P2PDictionary.SubscriptionInitiator)">
+<a name="onAddedSubscription(com.rhfung.P2PDictionary.subscription.Subscription, java.lang.String, com.rhfung.P2PDictionary.SubscriptionInitiator)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>onAddedSubscription</h4>
-<pre>public&nbsp;void&nbsp;onAddedSubscription(com.rhfung.P2PDictionary.Subscription&nbsp;s,
+<pre>public&nbsp;void&nbsp;onAddedSubscription(com.rhfung.P2PDictionary.subscription.Subscription&nbsp;s,
                        java.lang.String&nbsp;wildcardString,
                        <a href="../../../com/rhfung/P2PDictionary/SubscriptionInitiator.html" title="enum in com.rhfung.P2PDictionary">SubscriptionInitiator</a>&nbsp;initiator)</pre>
 <div class="block">Should not be called by client. Will be removed in a future release.</div>
 </li>
 </ul>
-<a name="onRemovedSubscription(com.rhfung.P2PDictionary.Subscription, java.lang.String)">
+<a name="onRemovedSubscription(com.rhfung.P2PDictionary.subscription.Subscription, java.lang.String)">
 <!--   -->
 </a>
 <ul class="blockList">

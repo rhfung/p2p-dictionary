@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Vector;
 
 import com.rhfung.Interop.EndPointMetadata;
+import com.rhfung.P2PDictionary.subscription.SubscriptionEventArgs;
 
 
 class WeakDataServer implements IMessageController

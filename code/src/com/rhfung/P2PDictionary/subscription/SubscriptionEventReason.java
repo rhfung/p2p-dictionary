@@ -1,4 +1,4 @@
-package com.rhfung.P2PDictionary;
+package com.rhfung.P2PDictionary.subscription;
 
 //P2PDictionary
 //Copyright (C) 2013, Richard H Fung (www.richardhfung.com)
@@ -22,10 +22,6 @@ package com.rhfung.P2PDictionary;
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-public interface ISubscriptionChanged {
-	void onAddedSubscription(Subscription s, String wildcardString,
-			SubscriptionInitiator initiator);
-
-	void onRemovedSubscription(Subscription s, String wildcardString);
-
+public enum SubscriptionEventReason {
+	Add, Change, Remove
 }

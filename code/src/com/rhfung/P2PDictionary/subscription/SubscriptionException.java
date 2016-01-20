@@ -1,4 +1,4 @@
-package com.rhfung.P2PDictionary;
+package com.rhfung.P2PDictionary.subscription;
 
 //P2PDictionary
 //Copyright (C) 2013, Richard H Fung (www.richardhfung.com)
@@ -22,9 +22,24 @@ package com.rhfung.P2PDictionary;
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-public class SubscriptionEventArgs {
-	public SubscriptionEventReason Reason;
-	public SubscriptionInitiator Initiator;
-	public String SubscripitonPattern;
+public class SubscriptionException extends Exception {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2184065793307189370L;
+
+	public SubscriptionException(String message) {
+		super(message);
+	}
+
+	public SubscriptionException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public SubscriptionException(String message, Throwable cause,
+			boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
 
 }

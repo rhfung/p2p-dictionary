@@ -45,6 +45,7 @@ import java.util.Queue;
 import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
 
+import com.rhfung.P2PDictionary.subscription.Subscription;
 import com.rhfung.logging.LogInstructions;
 import org.apache.commons.fileupload.MultipartStream;
 
@@ -59,7 +60,6 @@ import com.rhfung.Interop.NotImplementedException;
 import com.rhfung.Interop.StreamWriter;
 import com.rhfung.Interop.TcpClient;
 import com.rhfung.P2PDictionary.Encodings.ValueType;
-import org.apache.commons.lang3.StringUtils;
 
 
 class DataConnection

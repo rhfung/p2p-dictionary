@@ -1700,18 +1700,6 @@ import com.rhfung.logging.LogInstructions;
         	m_Tag = tag;
         }
 
-        /// <summary>
-        /// Searches for the next highest free port starting at basePort.
-        /// Throws ApplicationException if port not found.
-        /// </summary>
-        /// <param name="basePort">valid port number</param>
-        /// <returns>free port number</returns>
-        public static int findFreePort(int basePort)
-        {
-            return NetworkUtil.freePort(basePort);
-        }
-
-        
         /**
          * Should not be called by client. Will be removed in a future release.
          */

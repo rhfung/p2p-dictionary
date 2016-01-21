@@ -117,6 +117,10 @@ import com.rhfung.logging.LogInstructions;
             private IDictionaryCallback m_callback = new DefaultCallback();
             private PeerInterface m_discovery = new NoDiscovery();
 
+            private Builder() {
+
+            }
+
             /**
              * User-friendly description of the dictionary to appear on its website
              * @param description
@@ -200,6 +204,10 @@ import com.rhfung.logging.LogInstructions;
                         m_discovery
                 );
             }
+        }
+
+        public static Builder builder() {
+            return new Builder();
         }
 
         /**
@@ -432,7 +440,7 @@ import com.rhfung.logging.LogInstructions;
             if (writer == null)
                 this.debugBuffer = null;
             else
-                this.debugBuffer = new LogInstructions(writer, level, autoFlush);
+                this.debugBuffer = new LogInstructions(writer, level, _localUID, autoFlush);
 
             synchronized (connections)
             {
@@ -599,7 +607,7 @@ import com.rhfung.logging.LogInstructions;
         {
             int sleepLength = 0;
             DataEntry e = getEntry(this.data, this.dataLock, getFullKey(DATA_NAMESPACE, _partition, key));
-            while (sleepLength < msTimeout && e == null)
+            while (sleepLength < msTimeout && (e == null || DataMissing.isSingleton(e.value)))
             {
             	try
             	{
@@ -612,7 +620,7 @@ import com.rhfung.logging.LogInstructions;
             		break;
             	}
             }
-            if (!e.subscribed)
+            if (e == null || !e.subscribed || DataMissing.isSingleton(e.value))
             {
                 return defaultValue;
             }
@@ -981,11 +989,12 @@ import com.rhfung.logging.LogInstructions;
             // stop listener
             killbit = true;
 
+            WriteDebug("Closing dictionary");
 
             // stop auto connect
             if (this.constructNwTimer != null)
             {
-                WriteDebug("Stopping auto-connect timer");
+                WriteDebug("- Stopping auto-connect timer");
                 this.constructNwTimer.cancel();
                 this.constructNwTimer = null;
             }
@@ -993,7 +1002,7 @@ import com.rhfung.logging.LogInstructions;
             // disconnect discovery
             if (this.discovery != null)
             {
-                WriteDebug("Unregistering discovery");
+                WriteDebug("- Unregistering discovery");
                 this.discovery.UnregisterServer();
                 this.discovery = null;
             }
@@ -1002,7 +1011,7 @@ import com.rhfung.logging.LogInstructions;
             {
                 if (this.runLoop != null)
                 {
-                    WriteDebug("Waiting for run loop to close");
+                    WriteDebug("- Waiting for run loop to close");
                 	try
                 	{
                 		runLoop.join(1000);
@@ -1026,7 +1035,7 @@ import com.rhfung.logging.LogInstructions;
             // close all reader connections
             for (DataConnection c : closeConn)
             {
-                WriteDebug("Closing data connection");
+                WriteDebug("- Closing data connection");
                 c.Close(disposing);
             }
 
@@ -1040,7 +1049,7 @@ import com.rhfung.logging.LogInstructions;
                 {
                     if (thd.isAlive())
                     {
-                        WriteDebug("Waiting for sender thread to close " + thd.getName());
+                        WriteDebug("- Waiting for sender thread to close " + thd.getName());
                     	// idle wait for thread to close
                     	try
                     	{
@@ -1052,7 +1061,7 @@ import com.rhfung.logging.LogInstructions;
                     	}
                         if (thd.isAlive()) {
                             thd.interrupt();
-                            WriteDebug("Killing sender thread " + thd.getName());
+                            WriteDebug("- Killing sender thread " + thd.getName());
                         }
                     }
                 }

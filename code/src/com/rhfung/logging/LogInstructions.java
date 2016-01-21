@@ -37,17 +37,19 @@ public class LogInstructions
     private PrintStream m_writer;
     private int m_min_level = 0;
     private boolean m_autoFlush = false;
+    private int m_id = 0;
 
     public static final int DEBUG = 0;  // all payload data
     public static final int INFO = 1;   // connection messages
     public static final int WARN = 2;   // warnings only
     public static final int ERROR = 3;  // errors only
 
-    public LogInstructions(OutputStream writer, int min_level_to_log, boolean autoFlush)
+    public LogInstructions(OutputStream writer, int min_level_to_log, int dictID, boolean autoFlush)
     {
         m_writer = new PrintStream(writer);
         m_min_level = min_level_to_log;
         m_autoFlush = autoFlush;
+        m_id = dictID;
     }
 
     public PrintStream GetTextWriter()
@@ -82,7 +84,7 @@ public class LogInstructions
         {
         	synchronized (m_writer)
             {
-                m_writer.println(DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] "  + message);
+                m_writer.println(DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] (" + m_id + ") " + message);
                 if (m_autoFlush && flushThisMessage)
                     m_writer.flush();
             }
@@ -101,13 +103,13 @@ public class LogInstructions
         {
             synchronized (m_writer)
             {
-                m_writer.println(DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] " + " memory stream length=" + message.getLength() + "\n<<<");
+                m_writer.println(DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] (" + m_id + ") memory stream length=" + message.getLength() + "\n<<<");
                 try {
 					m_writer.write(message.getBuffer());
 				} catch (IOException e) {
 					m_writer.println(DateTimeNowTicks() + " error writing MemoryStream");
 				}
-                m_writer.println("\n>>>\n" + DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] " + " end memory stream");
+                m_writer.println("\n>>>\n" + DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] (" + m_id + ") end memory stream");
 
                 if (m_autoFlush)
                     m_writer.flush();

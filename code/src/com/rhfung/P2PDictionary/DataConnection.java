@@ -134,6 +134,7 @@ class DataConnection
             NewConnection,
             WebClientConnected,
             PeerNodeConnected,
+            FlushingToClose,
             Closing,
             Closed
         }
@@ -548,8 +549,9 @@ class DataConnection
             
             // pull using a GET or HEAD command
 
-            if (debugBuffer != null)
+            if (debugBuffer != null) {
                 debugBuffer.Log(LogInstructions.DEBUG, command, true);
+            }
 
             if (parts[0].equals( GET) || parts[0].equals(HEAD))
             {
@@ -620,11 +622,14 @@ class DataConnection
                 
             }
 
-
-
+            else if (parts[0].equals("\uFFFF")) {
+                // ignore message
+            }
             else // not a GET command or a HTTP response that server can understand
             {
                 WriteDebug("Unknown request - emptying buffer");
+                MemoryStream stream = new MemoryStream();
+                StreamWriter writer = stream.createStreamWriter();
 
                 // finish reading the command, read until a blank line is reached
                 try
@@ -632,10 +637,16 @@ class DataConnection
 	                do
 	                {
 	                    command = ReadLineFromBinary(reader);
+                        writer.writeLine(command);
 	                } while (command.length() > 0);
                 }
                 catch(IOException ex)
                 {
+                }
+
+                if (debugBuffer != null) {
+                    writer.flush();
+                    debugBuffer.Log(LogInstructions.DEBUG, stream);
                 }
 
                 MemoryStream bufferedOutput = new MemoryStream();
@@ -662,8 +673,8 @@ class DataConnection
 	            {
 	                int remoteID = Integer.parseInt(headers.get(HEADER_SPECIAL));
 	
-	                // stop duplicate connections
-	                if (controller.isConnected(remoteID) || remoteID == this.local_uid)
+
+	                if (remoteID == this.local_uid) // stop loopback connections
 	                {
 	                	WriteDebug("Detected loopback connection");
 	                	
@@ -672,6 +683,18 @@ class DataConnection
 	                    this.state = ConnectionState.Closing;
 	                    browserRequest = true;
 	                }
+                    else if (controller.isConnected(remoteID)) { // a special rule for disconnecting duplicate connections to the same peer
+                        if (remoteID < this.local_uid) {
+                            WriteDebug("Detected a duplicate connection, will close from " + remoteID);
+
+                            //close at convenience
+                            this.remote_uid = remoteID;
+                            this.state = ConnectionState.FlushingToClose;
+
+                        } else {
+                            WriteDebug("Detected a duplicate connection, waiting for " + remoteID + " to close");
+                        }
+                    }
 	                else
 	                {
 	                	WriteDebug("Hello " + remoteID);
@@ -1284,13 +1307,15 @@ class DataConnection
             if (killBit)
                 return false;
 
-            if (this.state == ConnectionState.Closed || this.state == ConnectionState.Closing)
+            if (this.state == ConnectionState.Closed || this.state == ConnectionState.Closing) {
                 return false;
+            }
 
             synchronized (sendBuffer)
             {
-                if (sendBuffer.size() > 0)
+                if (sendBuffer.size() > 0) {
                     bufferedOutput = sendBuffer.remove();
+                }
             }
 
             if (bufferedOutput != null)
@@ -1306,7 +1331,6 @@ class DataConnection
                         debugBuffer.Log(LogInstructions.INFO, this.local_uid + " wrote memory to " + this.remote_uid, true);
                         debugBuffer.Log(LogInstructions.DEBUG, bufferedOutput);
                     }
-                    bufferedOutput.dispose();
                 }
                 catch(Exception ex)
                 {
@@ -1315,7 +1339,11 @@ class DataConnection
                 if (this.state == ConnectionState.WebClientConnected)
                 {
                     this.state = ConnectionState.Closing;
+                } else if (this.state == ConnectionState.FlushingToClose && sendBuffer.size() == 0) {
+                    this.state = ConnectionState.Closing;
                 }
+
+                bufferedOutput.dispose();
             }
 
             // bounded by number of dictionary entries
@@ -1381,7 +1409,7 @@ class DataConnection
                         bufferedOutput = new MemoryStream();
                     }
                     // srcStream.WriteTo(bufferedOutput);
-                    bufferedOutput.createStreamWriter().Write(srcStream);
+                    bufferedOutput.createStreamWriter().write(srcStream);
                 }
 
                 // wire everything off in a pair
@@ -1588,9 +1616,9 @@ class DataConnection
             WriteResponseHeader(writer, DATA_NAMESPACE, "text/plain", file.length(), this.local_uid, 0, senderList, proxyResponsePath, verb, willClose);
             if (verb.equals(GET))
             {
-                writer.Write(file);
+                writer.write(file);
             }
-            writer.Flush();
+            writer.flush();
             
         }
 
@@ -1600,9 +1628,9 @@ class DataConnection
             WriteResponseHeader(writer, DATA_NAMESPACE, "application/json", file.length, this.local_uid, 0, senderList, proxyResponsePath, verb, willClose);
             if (verb.equals(GET))
             {
-                writer.Write(file);
+                writer.write(file);
             }
-            writer.Flush();
+            writer.flush();
             
         }
 
@@ -1662,9 +1690,9 @@ class DataConnection
 	            WriteResponseHeader(writer, DATA_NAMESPACE, "text/html", file.length(), this.local_uid, 0, GetListOfThisLocalID(), null,verb, willClose);
 	            if (verb.equals( GET))
 	            {
-	                writer.Write(file);
+	                writer.write(file);
 	            }
-	            writer.Flush();
+	            writer.flush();
         	}
         	else
         	{
@@ -1699,9 +1727,9 @@ class DataConnection
             WriteResponseHeader(writer, DATA_NAMESPACE, "text/plain", file.length(), this.local_uid, 0, GetListOfThisLocalID(), null,verb, willClose);
             if (verb .equals( GET))
             {
-                writer.Write(file);
+                writer.write(file);
             }
-            writer.Flush();
+            writer.flush();
         }
 
         private void ResponseBonjour(String verb, StreamWriter writer, boolean willClose)
@@ -1721,9 +1749,9 @@ class DataConnection
             WriteResponseHeader(writer, DATA_NAMESPACE, "text/plain", file.length(), this.local_uid, 0, GetListOfThisLocalID(),null, verb, willClose);
             if (verb.equals( GET))
             {
-                writer.Write(file);
+                writer.write(file);
             }
-            writer.Flush();
+            writer.flush();
         }
 
         private void ResponseConnections(String verb, StreamWriter writer, boolean willClose)
@@ -1773,9 +1801,9 @@ class DataConnection
             WriteResponseHeader(writer, DATA_NAMESPACE, "text/plain", file.length(), this.local_uid, 0, GetListOfThisLocalID(),null, verb, willClose);
             if (verb.equals( GET))
             {
-                writer.Write(file);
+                writer.write(file);
             }
-            writer.Flush();
+            writer.flush();
         }
 
         private void WriteMethodPush(String resource,ListInt senderList, ListInt proxyResponsePath, int contentLength,
@@ -1838,12 +1866,12 @@ class DataConnection
                     {
                     	byte[] bytesToWrite = entry.writeEncodedBytes();
                         WriteResponseHeader(writer, resource, entry.getMime(), bytesToWrite.length, entry.lastOwnerID, entry.lastOwnerRevision, senderList, proxyResponsePath, verb, willClose);
-                        writer.Flush();
+                        writer.flush();
                         if (verb.equals( GET))
                         {
-                        	writer.Write(bytesToWrite);
+                        	writer.write(bytesToWrite);
                         }
-                        writer.Flush();
+                        writer.flush();
                     }
                     /*
                     else if (entry.isSimpleValue() || entry.type == ValueType.String)
@@ -1855,12 +1883,12 @@ class DataConnection
                         byte[] bytesToWrite = System.Text.Encoding.UTF8.GetBytes(translation);
 
                         WriteResponseHeader(writer, resource, entry.getMime(), bytesToWrite.length, entry.lastOwnerID, entry.lastOwnerRevision, senderList, proxyResponsePath, verb, willClose);
-                        writer.Flush();
+                        writer.flush();
                         if (verb.equals( GET))
                         {
-                        	writer.Write(bytesToWrite);
+                        	writer.write(bytesToWrite);
                         }
-                        writer.Flush();
+                        writer.flush();
                     }
                     else if (entry.isComplexValue())
                     {
@@ -1868,11 +1896,11 @@ class DataConnection
                         {
                             byte[] bentry = (byte[])entry.value;
                             WriteResponseHeader(writer, resource, entry.getMime(), bentry.length, entry.lastOwnerID, entry.lastOwnerRevision, senderList, proxyResponsePath, verb, willClose);
-                            writer.Flush();
+                            writer.flush();
                             
                             if (verb.equals( GET))
                             {
-                                writer.Write(bentry);
+                                writer.write(bentry);
                             }
                             
                         }
@@ -1887,11 +1915,11 @@ class DataConnection
 
                                 // TODO : fix this mistake in C#
                                 WriteResponseHeader(writer, resource, entry.getMime(), (int)bentry.getLength(), entry.lastOwnerID, entry.lastOwnerRevision, senderList, proxyResponsePath, verb, willClose);
-                                writer.Flush();
+                                writer.flush();
 
                                 if (verb.equals( GET))
                                 {
-                                    writer.Write(bentry);
+                                    writer.write(bentry);
                                 }
 
                             }
@@ -2731,51 +2759,51 @@ throws JsonGenerationException, IOException
         {
             String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString( errorNumber), GetErrorMessage(errorNumber));
 
-            writer.WriteLine("HTTP/1.1 " + Integer.toString( errorNumber) + " " + GetErrorMessage(errorNumber));
-            writer.WriteLine("Content-Type: text/html");
-            writer.WriteLine(HEADER_LOCATION + ": " + contentLocation);
+            writer.writeLine("HTTP/1.1 " + Integer.toString( errorNumber) + " " + GetErrorMessage(errorNumber));
+            writer.writeLine("Content-Type: text/html");
+            writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
             if (errorNumber == 301)
-            	writer.WriteLine("Location: " + contentLocation);
-            writer.WriteLine("Content-Length: " + Integer.toString( payload.length()));
-            writer.WriteLine("Response-To: " + verb);
-            writer.WriteLine(HEADER_SPECIAL + ": " + Integer.toString(this.local_uid));
-            writer.WriteLine("P2P-Sender-List: " + GetStringOf(GetListOfThisLocalID()));
-            writer.WriteLine();
-            writer.Write(payload);
-            writer.Flush();
+            	writer.writeLine("Location: " + contentLocation);
+            writer.writeLine("Content-Length: " + Integer.toString( payload.length()));
+            writer.writeLine("Response-To: " + verb);
+            writer.writeLine(HEADER_SPECIAL + ": " + Integer.toString(this.local_uid));
+            writer.writeLine("P2P-Sender-List: " + GetStringOf(GetListOfThisLocalID()));
+            writer.writeLine();
+            writer.write(payload);
+            writer.flush();
         }
 
         private void WriteErrorNotFound(StreamWriter writer, String verb, String contentLocation, int errorNumber, ListInt senderList)
         {
             String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString(errorNumber), GetErrorMessage(errorNumber));
 
-            writer.WriteLine("HTTP/1.1 " + errorNumber +  " " + GetErrorMessage(errorNumber));
-            writer.WriteLine("Content-Type: text/html");
-            writer.WriteLine(HEADER_LOCATION + ": " + contentLocation);
-            writer.WriteLine("Content-Length: " + payload.length());
-            writer.WriteLine("P2P-Sender-List: " + GetStringOf(senderList));
-            writer.WriteLine("Response-To: " + verb);
-            writer.WriteLine(HEADER_SPECIAL + ": " + this.local_uid);
-            writer.WriteLine();
-            writer.Write(payload);
-            writer.Flush();
+            writer.writeLine("HTTP/1.1 " + errorNumber +  " " + GetErrorMessage(errorNumber));
+            writer.writeLine("Content-Type: text/html");
+            writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
+            writer.writeLine("Content-Length: " + payload.length());
+            writer.writeLine("P2P-Sender-List: " + GetStringOf(senderList));
+            writer.writeLine("Response-To: " + verb);
+            writer.writeLine(HEADER_SPECIAL + ": " + this.local_uid);
+            writer.writeLine();
+            writer.write(payload);
+            writer.flush();
         }
 
 
         private void ResponseCode(StreamWriter writer, String contentLocation, ListInt senderList, int dataOwner, int dataRevision, int code)
         {
             String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString(code), GetErrorMessage(code));
-            writer.WriteLine("HTTP/1.1 " + code + " " + GetErrorMessage(code));
-            writer.WriteLine("Content-Type: text/html");
-            writer.WriteLine(HEADER_LOCATION + ": " + contentLocation);
-            writer.WriteLine("Content-Length: " + Integer.toString( payload.length()));
-            writer.WriteLine(HEADER_SPECIAL + ": " + Integer.toString( this.local_uid));
-            writer.WriteLine("P2P-Sender-List: " + GetStringOf(senderList));
-            writer.WriteLine("ETag: \"" + dataOwner + "." + dataRevision + "\"");
-            writer.WriteLine("Response-To: GET");
-            writer.WriteLine();
-            writer.Write(payload);
-            writer.Flush();
+            writer.writeLine("HTTP/1.1 " + code + " " + GetErrorMessage(code));
+            writer.writeLine("Content-Type: text/html");
+            writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
+            writer.writeLine("Content-Length: " + Integer.toString( payload.length()));
+            writer.writeLine(HEADER_SPECIAL + ": " + Integer.toString( this.local_uid));
+            writer.writeLine("P2P-Sender-List: " + GetStringOf(senderList));
+            writer.writeLine("ETag: \"" + dataOwner + "." + dataRevision + "\"");
+            writer.writeLine("Response-To: GET");
+            writer.writeLine();
+            writer.write(payload);
+            writer.flush();
         }
 
         private void ResponseFollowProxy(StreamWriter writer, String contentLocation, ListInt senderList)
@@ -2783,18 +2811,18 @@ throws JsonGenerationException, IOException
             final int code = 307;
             String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString(code), GetErrorMessage(code));
 
-            writer.WriteLine("HTTP/1.1 " + code + " " + GetErrorMessage(code));
+            writer.writeLine("HTTP/1.1 " + code + " " + GetErrorMessage(code));
 
-            writer.WriteLine("Content-Type: text/html");
-            writer.WriteLine(HEADER_LOCATION + ": " + contentLocation);
-            writer.WriteLine("Content-Length: " + Integer.toString( payload.length()));
-            writer.WriteLine(HEADER_SPECIAL + ": " +  Integer.toString(this.local_uid));
-            writer.WriteLine("P2P-Sender-List: " + GetStringOf(senderList));
-            writer.WriteLine("ETag: \"" + 0 + "." + 0 + "\"");
-            writer.WriteLine("Response-To: GET");
-            writer.WriteLine();
-            writer.Write(payload);
-            writer.Flush();
+            writer.writeLine("Content-Type: text/html");
+            writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
+            writer.writeLine("Content-Length: " + Integer.toString( payload.length()));
+            writer.writeLine(HEADER_SPECIAL + ": " +  Integer.toString(this.local_uid));
+            writer.writeLine("P2P-Sender-List: " + GetStringOf(senderList));
+            writer.writeLine("ETag: \"" + 0 + "." + 0 + "\"");
+            writer.writeLine("Response-To: GET");
+            writer.writeLine();
+            writer.write(payload);
+            writer.flush();
         }
 
         private void WriteResponseInfo(StreamWriter writer, String contentLocation,DataEntry entry)
@@ -2802,34 +2830,34 @@ throws JsonGenerationException, IOException
         	int code = 200;
 			byte[] payload = GetEntryMetadataAsJson(entry);
         	
-        	writer.WriteLine("HTTP/1.1 " + code + " " + GetErrorMessage(code));
-        	writer.WriteLine("Content-Type: application/json");
-        	writer.WriteLine(HEADER_LOCATION + ": " + contentLocation);
-        	writer.WriteLine("Content-Length: " + Integer.toString(payload.length));
-        	writer.WriteLine();
-        	writer.Write(payload);
-        	writer.Flush();
+        	writer.writeLine("HTTP/1.1 " + code + " " + GetErrorMessage(code));
+        	writer.writeLine("Content-Type: application/json");
+        	writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
+        	writer.writeLine("Content-Length: " + Integer.toString(payload.length));
+        	writer.writeLine();
+        	writer.write(payload);
+        	writer.flush();
         }
 
 
         private void WriteResponseDeleted(StreamWriter writer, String contentLocation, ListInt senderList, ListInt proxyResponsePath, int dataOwner, int dataRevision)
         {
             String payload = formatString(getFileInPackage(RESOURCE_ERROR), "404", GetErrorMessage(404));
-            writer.WriteLine("HTTP/1.1 404 Not Found");
-            writer.WriteLine("Content-Type: text/html");
-            writer.WriteLine(HEADER_LOCATION + ": " + contentLocation);
-            writer.WriteLine("Content-Length: " + Integer.toString(payload.length()));
-            writer.WriteLine(HEADER_SPECIAL + ": " + Integer.toString(this.local_uid));
-            writer.WriteLine("P2P-Sender-List: " + GetStringOf(senderList));
+            writer.writeLine("HTTP/1.1 404 Not Found");
+            writer.writeLine("Content-Type: text/html");
+            writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
+            writer.writeLine("Content-Length: " + Integer.toString(payload.length()));
+            writer.writeLine(HEADER_SPECIAL + ": " + Integer.toString(this.local_uid));
+            writer.writeLine("P2P-Sender-List: " + GetStringOf(senderList));
             if (proxyResponsePath != null)
             {
-                writer.WriteLine("P2P-Response-Path: " + GetStringOf(proxyResponsePath));
+                writer.writeLine("P2P-Response-Path: " + GetStringOf(proxyResponsePath));
             }
-            writer.WriteLine("ETag: \"" + dataOwner + "." + dataRevision + "\"");
-            writer.WriteLine("Response-To: GET");
-            writer.WriteLine();
-            writer.Write(payload);
-            writer.Flush();
+            writer.writeLine("ETag: \"" + dataOwner + "." + dataRevision + "\"");
+            writer.writeLine("Response-To: GET");
+            writer.writeLine();
+            writer.write(payload);
+            writer.flush();
         }
 
         /// <summary>
@@ -2843,16 +2871,16 @@ throws JsonGenerationException, IOException
         /// <param name="dataRevision">resource version</param>
         private void WriteMethodDeleted(StreamWriter writer, String contentLocation, ListInt senderList, ListInt proxyResponsePath, int dataOwner, int dataRevision)
         {
-            writer.WriteLine(DELETE + " " + URLUtils.URLEncode(contentLocation) + " HTTP/1.1");
-            writer.WriteLine(HEADER_SPECIAL + ": " + Integer.toString(this.local_uid));
-            writer.WriteLine("P2P-Sender-List: " + GetStringOf(senderList));
+            writer.writeLine(DELETE + " " + URLUtils.URLEncode(contentLocation) + " HTTP/1.1");
+            writer.writeLine(HEADER_SPECIAL + ": " + Integer.toString(this.local_uid));
+            writer.writeLine("P2P-Sender-List: " + GetStringOf(senderList));
             if (proxyResponsePath != null)
             {
-                writer.WriteLine("P2P-Response-Path: " + GetStringOf(proxyResponsePath));
+                writer.writeLine("P2P-Response-Path: " + GetStringOf(proxyResponsePath));
             }
-            writer.WriteLine("ETag: \"" + dataOwner + "." + dataRevision + "\"");
-            writer.WriteLine();
-            writer.Flush();
+            writer.writeLine("ETag: \"" + dataOwner + "." + dataRevision + "\"");
+            writer.writeLine();
+            writer.flush();
         }
 
         private static ListInt GetArrayOf(String integerList)
@@ -2894,24 +2922,24 @@ throws JsonGenerationException, IOException
         private void WriteMethodHeader(StreamWriter writer, String contentLocation, String contentType, int contentSize, 
             int dataOwner, int dataRevision, ListInt senderList, ListInt responsePath, boolean willClose)
         {
-            writer.WriteLine( PUSH + " " + URLUtils.URLEncode(contentLocation) + " HTTP/1.1");
-            writer.WriteLine(HEADER_SPECIAL + ": " + this.local_uid);
-            writer.WriteLine("ETag: \"" + dataOwner + "." + dataRevision + "\"");
-            writer.WriteLine("P2P-Sender-List: " + GetStringOf(senderList));
+            writer.writeLine( PUSH + " " + URLUtils.URLEncode(contentLocation) + " HTTP/1.1");
+            writer.writeLine(HEADER_SPECIAL + ": " + this.local_uid);
+            writer.writeLine("ETag: \"" + dataOwner + "." + dataRevision + "\"");
+            writer.writeLine("P2P-Sender-List: " + GetStringOf(senderList));
             if (responsePath != null)
             {
-                writer.WriteLine("P2P-Response-Path: " + GetStringOf(responsePath));
+                writer.writeLine("P2P-Response-Path: " + GetStringOf(responsePath));
             }
-            writer.WriteLine("Content-Type: " + contentType);
-            writer.WriteLine("Content-Length: " + Integer.toString( contentSize));
+            writer.writeLine("Content-Type: " + contentType);
+            writer.writeLine("Content-Length: " + Integer.toString( contentSize));
            
             if (willClose)
             {
-                writer.WriteLine("Connection: close");
+                writer.writeLine("Connection: close");
             }
 
-            writer.WriteLine();
-            writer.Flush();
+            writer.writeLine();
+            writer.flush();
         }
 
         /// <summary>
@@ -2930,37 +2958,37 @@ throws JsonGenerationException, IOException
         private void WriteResponseHeader(StreamWriter writer, String contentLocation, String contentType, int contentSize, 
             int dataOwner, int dataRevision, ListInt senderList, ListInt responsePath, String responseToVerb, boolean willClose)
         {
-            writer.WriteLine("HTTP/1.1 200 OK");
-            writer.WriteLine(HEADER_SPECIAL + ": " + this.local_uid);
-            writer.WriteLine("ETag: \"" + dataOwner + "." + dataRevision + "\"");
-            writer.WriteLine(HEADER_LOCATION + ": " + contentLocation);
-            writer.WriteLine("P2P-Sender-List: " + GetStringOf(senderList));
+            writer.writeLine("HTTP/1.1 200 OK");
+            writer.writeLine(HEADER_SPECIAL + ": " + this.local_uid);
+            writer.writeLine("ETag: \"" + dataOwner + "." + dataRevision + "\"");
+            writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
+            writer.writeLine("P2P-Sender-List: " + GetStringOf(senderList));
             if (responsePath!=null)
             {
-                writer.WriteLine("P2P-Response-Path: " + GetStringOf(responsePath));
+                writer.writeLine("P2P-Response-Path: " + GetStringOf(responsePath));
             }
-            writer.WriteLine("Content-Type: " + contentType);
-            writer.WriteLine("Content-Length: " + Integer.toString( contentSize));
+            writer.writeLine("Content-Type: " + contentType);
+            writer.writeLine("Content-Length: " + Integer.toString( contentSize));
             if (responseToVerb.length() > 0)
             {
-                writer.WriteLine("Response-To: " + responseToVerb);
+                writer.writeLine("Response-To: " + responseToVerb);
             }
             if (willClose)
             {
-                writer.WriteLine("Connection: close");
+                writer.writeLine("Connection: close");
             }
 
-            writer.WriteLine();
-            writer.Flush();
+            writer.writeLine();
+            writer.flush();
         }
 
         private void WriteSimpleGetRequest(StreamWriter writer, DataHeader request)
         {
-            writer.WriteLine(GET + " " + URLUtils.URLEncode( request.key) + " HTTP/1.1");
-            writer.WriteLine("P2P-Sender-List: " + GetStringOf(request.sentFrom));
-            writer.WriteLine(HEADER_SPECIAL + ": " + this.local_uid);
-            writer.WriteLine();
-            writer.Flush();
+            writer.writeLine(GET + " " + URLUtils.URLEncode( request.key) + " HTTP/1.1");
+            writer.writeLine("P2P-Sender-List: " + GetStringOf(request.sentFrom));
+            writer.writeLine(HEADER_SPECIAL + ": " + this.local_uid);
+            writer.writeLine();
+            writer.flush();
         }
 
 }

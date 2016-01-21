@@ -12,7 +12,7 @@ public class MainObject {
 	{
 		System.out.println("Starting server on port 8765...");
 		
-		final P2PDictionary dict = (new P2PDictionary.Builder())
+		final P2PDictionary dict = P2PDictionary.builder()
 			.setDescription("Local File Transfer")
 			.setPort(8800)
 			.setNamespace("lft")

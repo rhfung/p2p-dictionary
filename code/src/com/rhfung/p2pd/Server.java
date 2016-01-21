@@ -49,7 +49,7 @@ public class Server {
             return;
         }
 
-        P2PDictionary.Builder builder = new P2PDictionary.Builder();
+        P2PDictionary.Builder builder = P2PDictionary.builder();
 
         if (cmd.hasOption("help")) {
             HelpFormatter formatter = new HelpFormatter();

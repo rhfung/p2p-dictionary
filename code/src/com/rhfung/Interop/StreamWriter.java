@@ -58,7 +58,7 @@ public class StreamWriter  {
 	 * Does not flush the buffer.
 	 * @param str
 	 */
-	public void WriteLine(String str)
+	public void writeLine(String str)
 	{
 		m_writer.write(str + NEWLINE);
 	}
@@ -66,7 +66,7 @@ public class StreamWriter  {
 	/**
 	 * Does not flush the buffer.
 	 */
-	public void WriteLine()
+	public void writeLine()
 	{
 		m_writer.write(NEWLINE);
 	}
@@ -75,7 +75,7 @@ public class StreamWriter  {
 	 * Writes strings. Does not flush the buffer.
 	 * @param str
 	 */
-	public void Write(String str)
+	public void write(String str)
 	{
 		m_writer.write(str);
 	}
@@ -83,7 +83,7 @@ public class StreamWriter  {
 	/**
 	 * Flushes string that are written.
 	 */
-	public void Flush() {
+	public void flush() {
 		flush(null);
 	}
 	
@@ -97,8 +97,9 @@ public class StreamWriter  {
 		{
 		try {
 			m_stream.write(ReadBytes(m_writer, m_writer.getBuffer().length()));
-			if(appendBytes != null)
+			if(appendBytes != null) {
 				m_stream.write(appendBytes);
+			}
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -111,8 +112,9 @@ public class StreamWriter  {
 			{
 				byteStream.write(m_memory.getBuffer());
 				byteStream.write(ReadBytes(m_writer, m_writer.getBuffer().length()));
-				if (appendBytes != null)
+				if (appendBytes != null) {
 					byteStream.write(appendBytes);
+				}
 			}
 			catch(IOException ex)
 			{
@@ -135,26 +137,26 @@ public class StreamWriter  {
     }
 
 	/**
-	 * Each call to Write with a byte array will deep copy the byte buffer, so call this method infrequently.
+	 * Each call to write with a byte array will deep copy the byte buffer, so call this method infrequently.
 	 * Flushes the buffer immediately.
 	 * @param byteBuffer
 	 */
-	public void Write(byte[] byteBuffer) {
+	public void write(byte[] byteBuffer) {
 		flush(byteBuffer);
 	}
 
 	/**
-	 * Each call to Write with a byte array will deep copy the byte buffer, so call this method infrequently.
+	 * Each call to write with a byte array will deep copy the byte buffer, so call this method infrequently.
 	 * Flushes the buffer immediately.
 	 * @param memStream
 	 */
-	public void Write(MemoryStream memStream)
+	public void write(MemoryStream memStream)
 	{
 		if (memStream != null)
 		{
 			if (memStream != m_memory)
 			{
-				Write(memStream.getBuffer());
+				write(memStream.getBuffer());
 			}
 			else
 			{
@@ -163,3 +165,4 @@ public class StreamWriter  {
 		}
 	}
 }
+

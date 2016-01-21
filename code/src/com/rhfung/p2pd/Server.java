@@ -95,14 +95,14 @@ public class Server {
             }
         }
 
-        final P2PDictionary dict = builder.build();
-
         if (cmd.hasOption("fulldebug")) {
-            dict.setDebugBuffer(System.out, LogInstructions.DEBUG, true);
+            builder.setLogLevel(System.out, LogInstructions.DEBUG);
         }
         else if (cmd.hasOption("debug")) {
-            dict.setDebugBuffer(System.out, LogInstructions.INFO, true);
+            builder.setLogLevel(System.out, LogInstructions.INFO);
         }
+
+        final P2PDictionary dict = builder.build();
 
         if (cmd.hasOption("nopattern")) {
             // do nothing

@@ -116,6 +116,8 @@ import com.rhfung.logging.LogInstructions;
             private int m_clientSearchTimespan = 5000;
             private IDictionaryCallback m_callback = new DefaultCallback();
             private PeerInterface m_discovery = new NoDiscovery();
+            private int m_logLevel = -1;
+            private PrintStream m_logBuffer = null;
 
             private Builder() {
 
@@ -193,6 +195,12 @@ import com.rhfung.logging.LogInstructions;
                 return this;
             }
 
+            public Builder setLogLevel(PrintStream logBuffer, int level) {
+                m_logBuffer = logBuffer;
+                m_logLevel = level;
+                return this;
+            }
+
             public P2PDictionary build() {
                 return new P2PDictionary(m_description,
                         m_port,
@@ -201,7 +209,9 @@ import com.rhfung.logging.LogInstructions;
                         m_clientMode,
                         m_clientSearchTimespan,
                         m_callback,
-                        m_discovery
+                        m_discovery,
+                        m_logBuffer,
+                        m_logLevel
                 );
             }
         }
@@ -247,7 +257,7 @@ import com.rhfung.logging.LogInstructions;
         {
             this(description, port, namespace,
                     serverMode, clientMode, searchForClientsTimespan,
-                    new DefaultCallback(), new NoDiscovery());
+                    new DefaultCallback(), new NoDiscovery(), null, -1);
         }
 
         private P2PDictionary(String description,
@@ -257,7 +267,9 @@ import com.rhfung.logging.LogInstructions;
                              P2PDictionaryClientMode clientMode,
                              int searchForClientsTimespan,
                              IDictionaryCallback cb,
-                             PeerInterface discovery)
+                             PeerInterface discovery,
+                              PrintStream logBuffer,
+                              int logLevel)
         {
             // some random ID
             this._description = description;
@@ -273,8 +285,15 @@ import com.rhfung.logging.LogInstructions;
             this.connections = new Vector<DataConnection>();
             this.subscription = new Subscription(this);
 
-            this.discovery = new PeerDiscovery(discovery);
             this.callback  = cb;
+
+            if (logBuffer != null && logLevel > -1) {
+                setDebugBuffer(logBuffer, logLevel, true);
+            } else {
+                this.debugBuffer = null;
+            }
+
+            this.discovery = new PeerDiscovery(this.debugBuffer, discovery);
 
             // sender threads
             ConstructSenderThreads();
@@ -311,8 +330,6 @@ import com.rhfung.logging.LogInstructions;
     			}, mSearchForClientsTimeout, mSearchForClientsTimeout);
 
             }
-
-            this.debugBuffer = null;
         }
 
         /**
@@ -442,11 +459,11 @@ import com.rhfung.logging.LogInstructions;
             else
                 this.debugBuffer = new LogInstructions(writer, level, _localUID, autoFlush);
 
-            synchronized (connections)
-            {
-                for (DataConnection c : connections)
-                {
-                    c.debugBuffer = this.debugBuffer;
+            if (connections != null) {
+                synchronized (connections) {
+                    for (DataConnection c : connections) {
+                        c.debugBuffer = this.debugBuffer;
+                    }
                 }
             }
         }
@@ -860,6 +877,8 @@ import com.rhfung.logging.LogInstructions;
                 throw new NotSupportedException("Cannot run the server more than once");
             }
 
+            WriteDebug("Starting server");
+
             if (addr == null)
             {
             	listener = new ServerSocket(port, BACKLOG);
@@ -877,72 +896,75 @@ import com.rhfung.logging.LogInstructions;
             runLoop = new Thread(new Runnable() {
 				
 				@Override
-				public void run() {
-					  	while(!killbit)
-			            {
-						  try
-						  {
-							  final Socket s = listener.accept();
-							  final DataConnection conn = new DataConnection(ConnectionType.Server,  getLocalID(), data, dataLock, new WeakDataServer(P2PDictionary.this), subscription, debugBuffer);
-			                    
-							  final Thread t = new Thread(new Runnable() {
-								
-								@Override
-								public void run() {
-						            synchronized (connections)
-						            {
-						                connections.add(conn);
-						            }
+                public void run() {
+                    WriteDebug("Started server thread");
+                    while(!killbit)
+                    {
+                        try
+                        {
+                            final Socket s = listener.accept();
+                            final DataConnection conn = new DataConnection(ConnectionType.Server,  getLocalID(), data, dataLock, new WeakDataServer(P2PDictionary.this), subscription, debugBuffer);
 
-						            try
-						            {
-						            	TcpClient client = new TcpClient(s);
-						                conn.ReadLoop(client);
-						            }
-						            catch(Exception ex)
-						            {
-						            	WriteDebug(_localUID +  " Exception on server receiving client: " );
-						            	if (debugBuffer !=null)
-						            		ex.printStackTrace(debugBuffer.GetTextWriter());
-						            }
-						            finally
-						            {
-						                synchronized (connections)
-						                {
-						                    getConnections().remove(conn);
-						                }
-						            }
-									
-								}
-							});
+                            final Thread t = new Thread(new Runnable() {
 
-					            conn.setThread(t);
-			                    t.setDaemon(true);
-			                    WriteDebug(_localUID + " Server: Accepting connection...");
-			                    t.setName(getDescription() + " Server thread " + s.getRemoteSocketAddress().toString());
-			                    t.start();
-			                    WriteDebug(_localUID + " Server: Connection opened");
-							  
+                                @Override
+                                public void run() {
+                                    WriteDebug("Started server socket thread");
+                                    synchronized (connections)
+                                    {
+                                        connections.add(conn);
+                                    }
 
-						  }
-						  catch(SocketTimeoutException ex)
-						  {
-							  // ignore
-						  }
-						  catch(IOException ex)
-						  {
-							  WriteDebug(_localUID + " failed to accept incoming connection: " + ex.getMessage() );
-						  }
-						  
-			            }
+                                    try
+                                    {
+                                        TcpClient client = new TcpClient(s);
+                                        conn.ReadLoop(client);
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                        WriteDebug("Exception on server receiving client: " );
+                                        if (debugBuffer !=null)
+                                            ex.printStackTrace(debugBuffer.GetTextWriter());
+                                    }
+                                    finally
+                                    {
+                                        synchronized (connections)
+                                        {
+                                            getConnections().remove(conn);
+                                        }
+                                    }
+                                    WriteDebug("Stopped server socket thread");
 
-					  // close the listener
-			            try {
-							listener.close();
-							WriteDebug(_localUID + " server closed");
-						} catch (IOException e) {
-						}
-					
+                                }
+                            });
+
+                            conn.setThread(t);
+                            t.setDaemon(true);
+                            WriteDebug("Server: Accepting connection...");
+                            t.setName(getDescription() + " Server thread " + s.getRemoteSocketAddress().toString());
+                            t.start();
+                            WriteDebug("Server: Connection opened");
+
+
+                        }
+                        catch(SocketTimeoutException ex)
+                        {
+                            // ignore
+                        }
+                        catch(IOException ex)
+                        {
+                            WriteDebug("Failed to accept incoming connection: " + ex.getMessage() );
+                        }
+
+                    }
+
+                    // close the listener
+                    try {
+
+                        listener.close();
+                    } catch (IOException e) {
+                    }
+                    WriteDebug("Stopped server thread");
 				}
 			});
             runLoop.setDaemon(true);
@@ -1088,7 +1110,8 @@ import com.rhfung.logging.LogInstructions;
 					
 					@Override
 					public void run() {
-			            
+			            WriteDebug("Started client thread for " + addr.getHostName() + ":" + port);
+
 			            synchronized (connections)
 			            {
 			                getConnections().add(conn);
@@ -1105,7 +1128,7 @@ import com.rhfung.logging.LogInstructions;
 			            }
 			            catch(Exception ex)
 			            {
-			                WriteDebug(Integer.toString( getLocalID()) + " Exception on read loop" );
+			                WriteDebug("Exception on read loop" );
 			                if (debugBuffer != null)
 			                	ex.printStackTrace(debugBuffer.GetTextWriter()); 
 	
@@ -1118,7 +1141,8 @@ import com.rhfung.logging.LogInstructions;
 			                    getConnections().remove(conn);
 			                }
 			            }
-	
+
+                        WriteDebug("Stopped client thread for " + addr.getHostName() + ":" + port);
 						
 					}
 				});
@@ -1146,10 +1170,7 @@ import com.rhfung.logging.LogInstructions;
         {
             if (debugBuffer != null)
             {
-                synchronized (debugBuffer)
-                {
-                    debugBuffer.Log(LogInstructions.INFO, msg, true);
-                }
+                debugBuffer.Log(LogInstructions.INFO, msg, true);
             }
         }
 
@@ -1305,7 +1326,7 @@ import com.rhfung.logging.LogInstructions;
                         }
                         else
                         {
-                            WriteDebug(this._localUID + " pullFromPeer because no connections are open");
+                            WriteDebug("pullFromPeer failed because no connections are open");
                         }
                     }
                 }
@@ -1390,7 +1411,7 @@ import com.rhfung.logging.LogInstructions;
             }
             else
             {
-                WriteDebug(this._localUID + " sendToPeer could not find a peer to respond to "+ message.ContentLocation + " in " + message.PeerList.toString() );
+                WriteDebug("sendToPeer could not find a peer to respond to "+ message.ContentLocation + " in " + message.PeerList.toString() );
                 //System.Diagnostics.Debug.Assert(false);
             }
             
@@ -1543,7 +1564,8 @@ import com.rhfung.logging.LogInstructions;
          */
         public boolean constructNetwork()
         {
-            
+            WriteDebug("Looking for peers");
+
             ListInt keys ;
             synchronized (PeerDiscovery.getDiscoveredPeers())
             {
@@ -1584,6 +1606,7 @@ import com.rhfung.logging.LogInstructions;
                         {
                         	if(c.getRemoteUID() == constructNwNextPeer && c.isClientConnection() == ConnectionType.Client)
                         	{
+                                WriteDebug("Removing a peer connection");
                         		c.Close();
                         	}
                         }
@@ -1597,6 +1620,7 @@ import com.rhfung.logging.LogInstructions;
                 }
                 synchronized (nextConnInfo)
                 {
+                    WriteDebug("Adding a peer connection to " + nextConnInfo.get(0).Address + ":" + nextConnInfo.get(0).Port);
                     this.openClient(nextConnInfo.get(0).Address, nextConnInfo.get(0).Port);
                 }
                 constructNwNextPeer = nextUID;
@@ -1622,6 +1646,7 @@ import com.rhfung.logging.LogInstructions;
                 }
                 synchronized (nextConnInfo)
                 {
+                    WriteDebug("Adding a peer connection to " + nextConnInfo.get(0).Address + ":" + nextConnInfo.get(0).Port);
                     this.openClient(nextConnInfo.get(0).Address, nextConnInfo.get(0).Port);
                 }
                 constructNwRandomPeer = keys.get(pickNum);
@@ -1634,6 +1659,8 @@ import com.rhfung.logging.LogInstructions;
         private void ConstructSenderThreads()
         {
             this.senderThreads = new Thread[SENDER_THREADS];
+
+            WriteDebug("Constructing sender threads");
             
             for (int i = 0; i < SENDER_THREADS; i++)
             {
@@ -1643,6 +1670,7 @@ import com.rhfung.logging.LogInstructions;
 					
 					@Override
 					public void run() {
+                        WriteDebug("Started sender thread " + j);
 						int offset = j;
 			            boolean stuff = false;
 			            while (!killbitSenderThreads)
@@ -1677,6 +1705,7 @@ import com.rhfung.logging.LogInstructions;
 			                	break;
 			                }
 			            }
+                        WriteDebug("Stopped sender thread " + j);
 					}
 				}, this._description + " sender thread " + i);
                 

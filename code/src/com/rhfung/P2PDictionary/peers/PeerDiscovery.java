@@ -26,6 +26,8 @@ import com.rhfung.P2PDictionary.EndpointInfo;
 import com.rhfung.P2PDictionary.P2PDictionary;
 import com.rhfung.P2PDictionary.peers.NoDiscovery;
 import com.rhfung.P2PDictionary.peers.PeerInterface;
+import com.rhfung.logging.LogInstructions;
+import com.sun.istack.internal.Nullable;
 
 import java.net.UnknownHostException;
 import java.util.Hashtable;
@@ -40,6 +42,7 @@ import java.util.Vector;
  */
 public class PeerDiscovery {
 	private static Hashtable<Integer, List<EndpointInfo>> m_discoveredPeers;
+	private LogInstructions m_log;
 
 	public synchronized static Hashtable<Integer, List<EndpointInfo>> getDiscoveredPeers() {
 		if (m_discoveredPeers == null) {
@@ -50,15 +53,9 @@ public class PeerDiscovery {
 
 	private PeerInterface m_peerInterface = null;
 
-	/**
-	 * Discovery disabled.
-	 */
-	public PeerDiscovery() {
-		m_peerInterface = new NoDiscovery();
-	}
-
-	public PeerDiscovery(PeerInterface discovery) {
+	public PeerDiscovery(@Nullable LogInstructions debugBuffer, PeerInterface discovery) {
 		m_peerInterface = discovery;
+		m_log = debugBuffer;
 	}
 	
 	/**
@@ -66,6 +63,10 @@ public class PeerDiscovery {
 	 */
 	public void BrowseServices()
 	{
+		if (m_log != null) {
+			m_log.Log(LogInstructions.INFO, "Browsing for services", true);
+		}
+
 		m_peerInterface.BrowseServices();
 	}
 	
@@ -75,6 +76,9 @@ public class PeerDiscovery {
 	 */
 	public void RegisterServer(P2PDictionary dict)
     {
+		if (m_log != null) {
+			m_log.Log(LogInstructions.INFO, "Registering server " + dict.getLocalID() + " with peer discovery", true);
+		}
 		m_peerInterface.RegisterServer(dict);
     }
 	
@@ -83,6 +87,10 @@ public class PeerDiscovery {
 	 */
 	 public void UnregisterServer()
 	 {
+		 if (m_log != null) {
+			 m_log.Log(LogInstructions.INFO, "Unregistering server", true);
+		 }
+
 		 m_peerInterface.UnregisterServer();
 	 }
 }

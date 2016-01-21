@@ -461,7 +461,7 @@ class DataConnection
         {
             this.client = data;
 
-            WriteDebug(this.local_uid +  " Connection " + client.getLocalEndPoint().toString() + " -> " + client.getRemoteEndPoint().toString() + " " + this.runThread.getName());
+            WriteDebug( "Connection " + client.getLocalEndPoint().toString() + " -> " + client.getRemoteEndPoint().toString() + " " + this.runThread.getName());
 
             try
             {
@@ -482,7 +482,7 @@ class DataConnection
             
 
             this.state = ConnectionState.Closed;
-            WriteDebug(this.local_uid + " Closed "+ this.runThread.getName());
+            WriteDebug("Closed "+ this.runThread.getName());
             
 
             try
@@ -1224,7 +1224,7 @@ class DataConnection
                 }
             }
 
-            WriteDebug(this.local_uid + " read " + verb + " " +  contentLocation + " from " + this.remote_uid +  "Senders: " + headers.get("P2P-Sender-List"));
+            WriteDebug("Read " + verb + " " +  contentLocation + " from " + this.remote_uid +  "Senders: " + headers.get("P2P-Sender-List"));
 
             // !senders.Contains(this.local_uid) --> if message hasn't been stamped by this node before...
 
@@ -1328,7 +1328,7 @@ class DataConnection
                 	
                 	if (debugBuffer != null)
                     {
-                        debugBuffer.Log(LogInstructions.INFO, this.local_uid + " wrote memory to " + this.remote_uid, true);
+                        debugBuffer.Log(LogInstructions.INFO, "Wrote memory to " + this.remote_uid, true);
                         debugBuffer.Log(LogInstructions.DEBUG, bufferedOutput);
                     }
                 }
@@ -1423,7 +1423,7 @@ class DataConnection
                             client.getOutputStream().flush();
                             if (debugBuffer != null)
                             {
-                                debugBuffer.Log(LogInstructions.INFO, this.local_uid + " wrote " + key + " to " + this.remote_uid, true);
+                                debugBuffer.Log(LogInstructions.INFO, "Wrote " + key + " to " + this.remote_uid, true);
                                 debugBuffer.Log(LogInstructions.DEBUG, bufferedOutput);
                             }
                         }
@@ -1548,7 +1548,7 @@ class DataConnection
             DataEntry e = P2PDictionary.getEntry( this.data, this.dataLock, key);
             if (e != null)
             {
-                WriteDebug(this.local_uid + " following proxy path, found content for " + key);
+                WriteDebug("Following proxy path, found content for " + key);
 
                 synchronized (e)
                 {
@@ -1583,7 +1583,7 @@ class DataConnection
                 // or if the requestPath is now at the current peer
                 if (hintPath == null || hintPath.size()  == 0)
                 {
-                    WriteDebug(this.local_uid + " forwarding request dropped " + key);
+                    WriteDebug("Forwarding request dropped " + key);
                 }
                 else
                 {
@@ -1595,7 +1595,7 @@ class DataConnection
                         senderList.add(this.local_uid);
 
                     
-                        WriteDebug(this.local_uid + " following proxy path " + key + " to " + GetStringOf(hintPath));
+                        WriteDebug("Following proxy path " + key + " to " + GetStringOf(hintPath));
                         SendMemoryToPeer sendMsg = new SendMemoryToPeer(PROXY_PREFIX + key, hintPath);
                         ResponseFollowProxy(sendMsg.MemBuffer.createStreamWriter(), PROXY_PREFIX + key, senderList);
                         return sendMsg;
@@ -2227,7 +2227,7 @@ throws JsonGenerationException, IOException
                 try {
 					nsLine = ReadLineFromBinary(reader);
 				} catch (IOException e) {
-					WriteDebug(getLocalUID() +  " truncated dictionary file");
+					WriteDebug("Truncated dictionary file");
 					break;
 				}
                 nsLineParts = nsLine.split("\t", 6);

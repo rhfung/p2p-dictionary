@@ -33,7 +33,7 @@ import com.rhfung.Interop.MemoryStream;
 
 public class LogInstructions
 {
-    private SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+    private static SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
     private PrintStream m_writer;
     private int m_min_level = 0;
     private boolean m_autoFlush = false;
@@ -57,7 +57,7 @@ public class LogInstructions
         return m_writer;
     }
 
-    private String LevelStringFromInteger(int level) {
+    private static String LevelStringFromInteger(int level) {
         if (level == DEBUG) {
             return "DEBUG";
         } else if (level == INFO) {
@@ -71,6 +71,10 @@ public class LogInstructions
         }
     }
 
+    private String getPreamble(int level) {
+        return DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] (" + m_id + ") {" + Thread.currentThread().getId()  + "} ";
+    }
+
     /**
      * Writes a log message, if the level of the message matches/exceeds initial configuration.
      * Auto-flush is controlled on creation.
@@ -78,15 +82,16 @@ public class LogInstructions
      * @param message
      * @param flushThisMessage
      */
-    public void Log(int level, String message, boolean flushThisMessage)
+    public synchronized void Log(int level, String message, boolean flushThisMessage)
     {
         if (level >= m_min_level)
         {
         	synchronized (m_writer)
             {
-                m_writer.println(DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] (" + m_id + ") " + message);
-                if (m_autoFlush && flushThisMessage)
+                m_writer.println(getPreamble(level) + message);
+                if (m_autoFlush && flushThisMessage) {
                     m_writer.flush();
+                }
             }
         }
     }
@@ -97,19 +102,19 @@ public class LogInstructions
      * @param level
      * @param message
      */
-    public void Log(int level, MemoryStream message)
+    public synchronized void Log(int level, MemoryStream message)
     {
         if (level >= m_min_level)
         {
             synchronized (m_writer)
             {
-                m_writer.println(DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] (" + m_id + ") memory stream length=" + message.getLength() + "\n<<<");
+                m_writer.println(getPreamble(level) + "memory stream length=" + message.getLength() + "\n<<<");
                 try {
 					m_writer.write(message.getBuffer());
 				} catch (IOException e) {
 					m_writer.println(DateTimeNowTicks() + " error writing MemoryStream");
 				}
-                m_writer.println("\n>>>\n" + DateTimeNowTicks() + " [" + LevelStringFromInteger(level) + "] (" + m_id + ") end memory stream");
+                m_writer.println("\n>>>\n" + getPreamble(level) + "end memory stream");
 
                 if (m_autoFlush)
                     m_writer.flush();
@@ -117,7 +122,7 @@ public class LogInstructions
         }
     }
     
-    private String DateTimeNowTicks()
+    private static String DateTimeNowTicks()
     {
     	return  ISO8601DATEFORMAT.format(new Date());
     }

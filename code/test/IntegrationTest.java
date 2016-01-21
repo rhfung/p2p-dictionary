@@ -21,16 +21,15 @@ public class IntegrationTest extends TestCase {
         dict1 =  P2PDictionary.builder()
                 .setPort(dict1Port)
                 .setNamespace("test")
+                //.setLogLevel(System.out, LogInstructions.INFO)
                 .build();
 
         dict2Port = NetworkUtil.freePort(dict1Port + 1);
         dict2 = P2PDictionary.builder()
                 .setPort(dict2Port)
                 .setNamespace("test")
+                //.setLogLevel(System.out, LogInstructions.INFO)
                 .build();
-
-        dict1.setDebugBuffer(System.out, LogInstructions.INFO, true);
-        dict2.setDebugBuffer(System.out, LogInstructions.INFO, true);
 
         dict1.addSubscription("*");
         dict2.addSubscription("*");

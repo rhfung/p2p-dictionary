@@ -1336,10 +1336,7 @@ class DataConnection
                 {
                 }
 
-                if (this.state == ConnectionState.WebClientConnected)
-                {
-                    this.state = ConnectionState.Closing;
-                } else if (this.state == ConnectionState.FlushingToClose && sendBuffer.size() == 0) {
+                if (this.state == ConnectionState.WebClientConnected) {
                     this.state = ConnectionState.Closing;
                 }
 
@@ -1434,15 +1431,15 @@ class DataConnection
                     {
                     }
                 }
-                    
-
-                    
             }
 
+            boolean hasContentsToSend = (sendBuffer.size() > 0) || (sendEntries.size() > 0) || (receiveEntries.size() > 0);
 
+            if (this.state == ConnectionState.FlushingToClose && !hasContentsToSend) {
+                this.state = ConnectionState.Closing;
+            }
 
-            return (sendBuffer.size() > 0) || (sendEntries.size() > 0) || (receiveEntries.size() > 0);
-            
+            return hasContentsToSend;
         }
 
         // there's gotta be a better way for reading this

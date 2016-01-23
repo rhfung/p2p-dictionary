@@ -85,12 +85,6 @@ class DataConnection
         public static final String PUSH = "PUSH";      // not in HTTP: this announces changes, no payload, no response
         public static final String POST = "POST";	   // handles adding resources from a REST API, has payload, payload in response
 
-        // response codes
-        public static final String RESPONSECODE_GOOD = "200";
-        public static final String RESPONSECODE_PROXY = "305";
-        public static final String RESPONSECODE_PROXY2 = "307";
-        public static final String RESPONSECODE_DELETED = "404";
-        public static final int RESPONSEVALUE_NOTFOUND = 404;
 
         static final String NEWLINE = "\r\n";
         static final String HEADER_SPECIAL = "P2P-Dictionary";
@@ -201,7 +195,7 @@ class DataConnection
         {
             // TODO: need to create an asymmetric close handshake
             SendMemoryToPeer endMsg = new SendMemoryToPeer(CLOSE_MESSAGE, ListInt.createList( this.remote_uid));
-            ResponseCode(endMsg.MemBuffer.createStreamWriter(), CLOSE_MESSAGE, GetListOfThisLocalID(), 0, 0, 200);
+            ResponseCode(endMsg.MemBuffer.createStreamWriter(), CLOSE_MESSAGE, GetListOfThisLocalID(), 0, 0, NetworkUtil.VALUE_GOOD);
             SendToRemoteClient(endMsg);
 
             if (!disposing)
@@ -556,13 +550,13 @@ class DataConnection
                 Hashtable<String, String> headers = ReadHeaders(reader);
 
                 String verb;
-                if (responseCode.equals(RESPONSECODE_PROXY))
+                if (responseCode.equals(NetworkUtil.RESPONSE_STR_PROXY))
                 {
-                    verb = RESPONSECODE_PROXY;
+                    verb = NetworkUtil.RESPONSE_STR_PROXY;
                 }
-                else if (responseCode.equals(RESPONSECODE_PROXY2))
+                else if (responseCode.equals(NetworkUtil.RESPONSE_STR_PROXY2))
                 {
-                    verb = RESPONSECODE_PROXY2;
+                    verb = NetworkUtil.RESPONSE_STR_PROXY2;
                 }
                 else// assume RESPONSECODE_GOOD
                 {
@@ -573,7 +567,7 @@ class DataConnection
 
                         if (verb.equals(GET))
                         {
-                            if (responseCode.equals(RESPONSECODE_DELETED)) {
+                            if (responseCode.equals(NetworkUtil.RESPONSE_STR_DELETED)) {
                                 verb = DELETE;
                             } else {
                                 verb = PUT;
@@ -630,7 +624,7 @@ class DataConnection
                 }
 
                 MemoryStream bufferedOutput = new MemoryStream();
-                WriteErrorNotFound(bufferedOutput.createStreamWriter(), "GET", parts[1], 500);
+                WriteErrorNotFound(bufferedOutput.createStreamWriter(), "GET", parts[1], NetworkUtil.VALUE_NOT_IMPLEMENTED);
                 synchronized (sendBuffer)
                 {
                     sendBuffer.add(bufferedOutput);
@@ -780,7 +774,7 @@ class DataConnection
             else if (resource.equals( CLOSE_MESSAGE) || resource.equals(CLOSE_MESSAGE + "/"))
             {
                 // don't know what to do here
-                WriteErrorNotFound(memBuffer.createStreamWriter(), verb, CLOSE_MESSAGE, 200);
+                WriteErrorNotFound(memBuffer.createStreamWriter(), verb, CLOSE_MESSAGE, NetworkUtil.VALUE_GOOD);
             }
             else if (resource.equals( SUBSCRIPTIONS_NS ) || resource.equals(SUBSCRIPTIONS_NS + "/"))
             {
@@ -810,7 +804,12 @@ class DataConnection
                     else
                     {
                         // tell the caller that a proxy must be used
-                        ResponseCode(memBuffer.createStreamWriter(), resource, GetListOfThisLocalID(), entry.lastOwnerID, entry.lastOwnerRevision, 305);
+                        ResponseCode(memBuffer.createStreamWriter(),
+                                resource,
+                                GetListOfThisLocalID(),
+                                entry.lastOwnerID,
+                                entry.lastOwnerRevision,
+                                NetworkUtil.VALUE_PROXY);
                     }
                 }
             }
@@ -821,7 +820,8 @@ class DataConnection
             else
             {
                 // anything else
-                WriteErrorNotFound(memBuffer.createStreamWriter(), verb, resource, 404, GetListOfThisLocalID());
+                WriteErrorNotFound(memBuffer.createStreamWriter(), verb,
+                        resource, NetworkUtil.VALUE_NOTFOUND, GetListOfThisLocalID());
             }
 
             // spit everything out of the writer
@@ -967,28 +967,38 @@ class DataConnection
             }
         }
 
-        private static String getBoundaryFromContentType(String contentType)
+        private static String getMultiPartBoundaryFromContentType(String contentType)
         {
+            final String CONTENT_TYPE_MULTI_PART = "multipart/form-data";
         	final String BOUNDARY = "boundary=";
         	int startIndex = contentType.indexOf(BOUNDARY);
-        	if (startIndex >= 0)
+            int isMultiPart = contentType.indexOf(CONTENT_TYPE_MULTI_PART);
+        	if (isMultiPart >= 0 && startIndex >= isMultiPart)
         		return contentType.substring(startIndex + BOUNDARY.length());
         	else
         		return null;
         }
-        
+
+        /**
+         * Handles regular web POST methods.
+         */
         private void HandleReadPost(String contentLocation, String contentType, String accepts, ListInt senders, byte[] payload)
         {
             if (contentLocation.equals(ADDENTRY_NS_API) || 
-            		contentLocation.equals(ADDENTRY_NS_BYTES_API)||
-            		contentLocation.equals(ADDENTRY_NS_MIME_API))
+                contentLocation.equals(ADDENTRY_NS_BYTES_API)||
+                contentLocation.equals(ADDENTRY_NS_MIME_API))
             {
             	boolean sendMime = contentLocation.equals(ADDENTRY_NS_MIME_API);
             	
-            	String boundary = getBoundaryFromContentType(contentType);
+            	String boundary = getMultiPartBoundaryFromContentType(contentType);
             	if (boundary == null)
             	{
-            		WriteDebug("Cannot identify boundary from POST");
+                    MemoryStream bufferedOutput = new MemoryStream();
+                    WriteErrorNotFound(bufferedOutput.createStreamWriter(), "GET", contentLocation, NetworkUtil.VALUE_NOT_IMPLEMENTED);
+                    synchronized (sendBuffer)
+                    {
+                        sendBuffer.add(bufferedOutput);
+                    }
             		return;
             	}
             	
@@ -1051,7 +1061,7 @@ class DataConnection
                 	
             	} catch(Exception e) {
             		MemoryStream bufferedOutput = new MemoryStream();
-                    WriteErrorNotFound(bufferedOutput.createStreamWriter(), "GET", contentLocation, 500);
+                    WriteErrorNotFound(bufferedOutput.createStreamWriter(), "GET", contentLocation, NetworkUtil.VALUE_NOT_IMPLEMENTED);
                     synchronized (sendBuffer)
                     {
                         sendBuffer.add(bufferedOutput);
@@ -1064,7 +1074,7 @@ class DataConnection
             else
             {
             	MemoryStream bufferedOutput = new MemoryStream();
-                WriteErrorNotFound(bufferedOutput.createStreamWriter(), "GET", contentLocation, 501);
+                WriteErrorNotFound(bufferedOutput.createStreamWriter(), "GET", contentLocation, NetworkUtil.VALUE_NOT_IMPLEMENTED);
                 synchronized (sendBuffer)
                 {
                     sendBuffer.add(bufferedOutput);
@@ -1213,7 +1223,7 @@ class DataConnection
             {
                 HandleReadDelete(contentLocation, headers.get("ETag"), senders, responsePath);
             }
-            else if (!senders.contains(this.local_uid) && verb.equals(RESPONSECODE_PROXY))
+            else if (!senders.contains(this.local_uid) && verb.equals(NetworkUtil.RESPONSE_STR_PROXY))
             {
                 SendMemoryToPeer mem = RespondOrForwardProxy(PROXY_PREFIX + contentLocation, new ListInt());
                 if (mem != null)
@@ -1229,7 +1239,7 @@ class DataConnection
                     // TODO: figure out what this does
                 }
             }
-            else if (!senders.contains(this.local_uid) && verb.equals(RESPONSECODE_PROXY2))
+            else if (!senders.contains(this.local_uid) && verb.equals(NetworkUtil.RESPONSE_STR_PROXY2))
             {
 
                 SendMemoryToPeer mem = RespondOrForwardProxy(contentLocation, new ListInt(senders));
@@ -1660,7 +1670,7 @@ class DataConnection
         	String key = this.controller.getDefaultKey();
         	if (key == null)
         	{
-        		WriteErrorNotFound(writer, verb, ROOT_NAMESPACE, RESPONSEVALUE_NOTFOUND);
+        		WriteErrorNotFound(writer, verb, ROOT_NAMESPACE, NetworkUtil.VALUE_NOTFOUND);
         	}
         	else if (key.length() == 0)
         	{
@@ -1676,11 +1686,11 @@ class DataConnection
         	{
         		if ( controller.containsKey( key ) )
         		{
-        			WriteErrorNotFound(writer, verb, controller.getFullKey(key), 301);
+        			WriteErrorNotFound(writer, verb, controller.getFullKey(key), NetworkUtil.VALUE_MOVED);
         		}
         		else
         		{
-        			WriteErrorNotFound(writer, verb, ROOT_NAMESPACE, RESPONSEVALUE_NOTFOUND);
+        			WriteErrorNotFound(writer, verb, ROOT_NAMESPACE, NetworkUtil.VALUE_NOTFOUND);
         		}
         	}
         }
@@ -2714,19 +2724,21 @@ throws JsonGenerationException, IOException
         {
             switch (errorNum)
             {
-                case 200: 
+                case NetworkUtil.VALUE_GOOD:
                     return "OK";
-                case 301: // default homepage
+                case NetworkUtil.VALUE_MOVED: // default homepage
                 	return "Moved Permanently";
-                case 305: // missing
+                case NetworkUtil.VALUE_PROXY: // missing
                     return "Use Proxy";
-                case 404: // deleted
+                case NetworkUtil.VALUE_PROXY2: // missing
+                    return "Special Proxy";
+                case NetworkUtil.VALUE_NOTFOUND: // deleted
                     return "Not Found";
-                case 405: // unused
+                case NetworkUtil.VALUE_BADMETHOD: // unused
                     return "Method Not Allowed";
-                case 500: // handle read
+                case NetworkUtil.VALUE_INTERNAL_SERVER_ERROR: // handle read
                 	return "Internal Server Error";
-                case 501: // POST
+                case NetworkUtil.VALUE_NOT_IMPLEMENTED: // POST
                 	return "Not Implemented";
                 default:
                     return "Unknown";
@@ -2740,8 +2752,9 @@ throws JsonGenerationException, IOException
             writer.writeLine("HTTP/1.1 " + Integer.toString( errorNumber) + " " + GetErrorMessage(errorNumber));
             writer.writeLine("Content-Type: text/html");
             writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
-            if (errorNumber == 301)
-            	writer.writeLine("Location: " + contentLocation);
+            if (errorNumber == NetworkUtil.VALUE_MOVED) {
+                writer.writeLine("Location: " + contentLocation);
+            }
             writer.writeLine("Content-Length: " + Integer.toString( payload.length()));
             writer.writeLine("Response-To: " + verb);
             writer.writeLine(HEADER_SPECIAL + ": " + Integer.toString(this.local_uid));
@@ -2786,7 +2799,7 @@ throws JsonGenerationException, IOException
 
         private void ResponseFollowProxy(StreamWriter writer, String contentLocation, ListInt senderList)
         {
-            final int code = 307;
+            final int code = NetworkUtil.VALUE_PROXY2;
             String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString(code), GetErrorMessage(code));
 
             writer.writeLine("HTTP/1.1 " + code + " " + GetErrorMessage(code));
@@ -2805,7 +2818,7 @@ throws JsonGenerationException, IOException
 
         private void WriteResponseInfo(StreamWriter writer, String contentLocation,DataEntry entry)
         {
-        	int code = 200;
+        	final int code = NetworkUtil.VALUE_GOOD;
 			byte[] payload = GetEntryMetadataAsJson(entry);
         	
         	writer.writeLine("HTTP/1.1 " + code + " " + GetErrorMessage(code));
@@ -2820,7 +2833,7 @@ throws JsonGenerationException, IOException
 
         private void WriteResponseDeleted(StreamWriter writer, String contentLocation, ListInt senderList, ListInt proxyResponsePath, int dataOwner, int dataRevision)
         {
-            String payload = formatString(getFileInPackage(RESOURCE_ERROR), "404", GetErrorMessage(404));
+            String payload = formatString(getFileInPackage(RESOURCE_ERROR), NetworkUtil.RESPONSE_STR_DELETED, GetErrorMessage(NetworkUtil.VALUE_NOTFOUND));
             writer.writeLine("HTTP/1.1 404 Not Found");
             writer.writeLine("Content-Type: text/html");
             writer.writeLine(HEADER_LOCATION + ": " + contentLocation);

@@ -30,6 +30,21 @@ public class NetworkUtil {
 	private static final int MIN_PORT_NUMBER = 1;
 	private static final int MAX_PORT_NUMBER = 65535;
 
+	// response codes
+	public static final String RESPONSE_STR_GOOD = "200";
+	public static final String RESPONSE_STR_PROXY = "305";
+	public static final String RESPONSE_STR_PROXY2 = "307";
+	public static final String RESPONSE_STR_DELETED = "404";
+
+	public static final int VALUE_GOOD = 200;
+	public static final int VALUE_MOVED = 301;
+	public static final int VALUE_PROXY = 305;
+	public static final int VALUE_PROXY2 = 307;
+	public static final int VALUE_NOTFOUND = 404;
+	public static final int VALUE_BADMETHOD = 405;
+	public static final int VALUE_INTERNAL_SERVER_ERROR = 500;
+	public static final int VALUE_NOT_IMPLEMENTED= 501;
+
 	/**
 	 * Returns a free port number at/above suggestedPort.
 	 * @param suggestedPort

@@ -60,10 +60,28 @@ Running in Docker
 
 To run this project locally, run the following commands from your Docker terminal:
 
-    ./start
+    ./start [parameters]
 
 And then visit the URL ```http://docker_url:8765``` where `docker_url` is `localhost` (linux)
 or the docker machine URL (mac)
+
+Parameters:
+
+    -c,--clients <hosts>     Provide clients in the form
+                            hostname:port,hostname:port,... (separated by
+                            comma)
+    -d,--discovery <arg>     Backend discovery mechanism: none, win-bonjour
+    -debug                   Enable debugging mode
+    -fulldebug               Enable debugging mode
+    -h,--help <arg>          Show this help
+    -m,--description <arg>   Description for the server
+      --nopattern           Monitors no patterns
+    -ns,--namespace <arg>    Namespace for the server
+    -p <arg>                 Port that the server binds to
+      --pattern <arg>       Monitors a specific pattern using wildcard (*),
+                            single character (?), and number (#)
+                            placeholders; default to *
+    -t,--timespan <arg>      Search timespan for clients
 
 The Docker-related configuration files are:
 

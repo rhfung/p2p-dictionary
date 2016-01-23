@@ -27,7 +27,6 @@ import com.rhfung.P2PDictionary.P2PDictionary;
 import com.rhfung.P2PDictionary.peers.NoDiscovery;
 import com.rhfung.P2PDictionary.peers.PeerInterface;
 import com.rhfung.logging.LogInstructions;
-import com.sun.istack.internal.Nullable;
 
 import java.net.UnknownHostException;
 import java.util.Hashtable;
@@ -53,7 +52,7 @@ public class PeerDiscovery {
 
 	private PeerInterface m_peerInterface = null;
 
-	public PeerDiscovery(@Nullable LogInstructions debugBuffer, PeerInterface discovery) {
+	public PeerDiscovery(LogInstructions debugBuffer, PeerInterface discovery) {
 		m_peerInterface = discovery;
 		m_log = debugBuffer;
 	}

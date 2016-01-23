@@ -8,13 +8,13 @@ import java.net.URLEncoder;
 /**
  * Created by richard on 1/18/16.
  */
-public class URLUtils {
+class URLUtils {
     /**
      * Removes extra backslash.
      * @param readableURL
      * @return
      */
-    public static String URLEncode(String readableURL)
+    static String URLEncode(String readableURL)
     {
         if (readableURL == null) {
             return readableURL;
@@ -41,7 +41,7 @@ public class URLUtils {
      * @param encodedURL
      * @return
      */
-    public static String URLDecode(String encodedURL)
+    static String URLDecode(String encodedURL)
     {
         if (encodedURL == null) {
             return encodedURL;
@@ -63,4 +63,30 @@ public class URLUtils {
         }
     }
 
+
+    /*
+        * Splits a string into up to three parts:
+        * first
+        * first last
+        * first middle middle last
+        */
+    static String[] splitFrontEnd3(String input)
+    {
+        int firstSpace = input.indexOf(" ");
+        int lastSpace = input.indexOf(" ", firstSpace + 1);
+        if (0 < firstSpace  && firstSpace < lastSpace)
+        {
+            // three-part string formed
+            return new String[] { input.substring(0, firstSpace),
+                    input.substring(firstSpace + 1, lastSpace),
+                    input.substring(lastSpace + 1) };
+        }
+        else
+        {
+            if (firstSpace > 0)
+                return new String[] { input.substring(0, firstSpace), input.substring(firstSpace + 1) };
+            else
+                return new String[] { input };
+        }
+    }
 }

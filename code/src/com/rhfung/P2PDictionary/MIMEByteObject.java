@@ -22,6 +22,8 @@ package com.rhfung.P2PDictionary;
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
+import java.nio.charset.Charset;
+
 /**
  * Dictionary contains elements of this type if the MIME type is not recognized.
  * @author Richard
@@ -49,5 +51,10 @@ public class MIMEByteObject {
     public byte[] getPayload()
     {
         return m_payload;
+    }
+
+    public String toString() {
+        String preview = new String(getPayload(), Charset.defaultCharset());
+        return "MIMEByteObject Content-Type=" + getMimeType() + " and Content-Length=" + getPayload().length + " Content=" + preview;
     }
 }

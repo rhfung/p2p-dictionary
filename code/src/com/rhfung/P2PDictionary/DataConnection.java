@@ -129,7 +129,7 @@ class DataConnection
         // messages
         private IMessageController controller;
 
-        private enum ConnectionState
+        enum ConnectionState
         {
             NewConnection,
             WebClientConnected,
@@ -320,6 +320,10 @@ class DataConnection
             
         }
 
+        ConnectionState getState() {
+            return state;
+        }
+
         /// <summary>
         /// Creates a message with LocalUID as the sender list
         /// </summary>
@@ -502,31 +506,7 @@ class DataConnection
             }
         }
 
-        /*
-         * Splits a string into up to three parts:
-         * first
-         * first last
-         * first middle middle last
-         */
-        private static String[] splitFrontEnd3(String input)
-        {
-        	int firstSpace = input.indexOf(" ");
-        	int lastSpace = input.lastIndexOf(" ");
-        	if (0 < firstSpace  && firstSpace < lastSpace)
-        	{
-        		// three-part string formed
-        		return new String[] { input.substring(0, firstSpace), 
-        				input.substring(firstSpace + 1, lastSpace),
-        				input.substring(lastSpace + 1) };
-        	}
-        	else
-        	{
-        		if (firstSpace > 0)
-        			return new String[] { input.substring(0, firstSpace), input.substring(firstSpace + 1) };
-        		else
-        			return new String[] { input };
-        	}
-        }
+
         
         private boolean HandleRead(InputStreamReader reader)
         {
@@ -545,7 +525,7 @@ class DataConnection
 
 
             //String[] parts = command.split(" ", 3);
-        	String[] parts = splitFrontEnd3(command); 
+        	String[] parts = URLUtils.splitFrontEnd3(command);
             
             // pull using a GET or HEAD command
 
@@ -689,7 +669,8 @@ class DataConnection
 
                             //close at convenience
                             this.remote_uid = remoteID;
-                            this.state = ConnectionState.FlushingToClose;
+                            // TODO: Debug the closing process
+//                            this.state = ConnectionState.FlushingToClose;
 
                         } else {
                             WriteDebug("Detected a duplicate connection, waiting for " + remoteID + " to close");
@@ -1224,30 +1205,13 @@ class DataConnection
                 }
             }
 
-            WriteDebug("Read " + verb + " " +  contentLocation + " from " + this.remote_uid +  "Senders: " + headers.get("P2P-Sender-List"));
+            WriteDebug("Read " + verb + " " +  contentLocation + " from " + this.remote_uid +  " Senders: " + headers.get("P2P-Sender-List"));
 
             // !senders.Contains(this.local_uid) --> if message hasn't been stamped by this node before...
 
             if (!senders.contains(this.local_uid) && verb.equals(DELETE) && headers.containsKey("ETag"))
             {
                 HandleReadDelete(contentLocation, headers.get("ETag"), senders, responsePath);
-            }
-            else if (!senders.contains(this.local_uid) && contentLocation.equals(CLOSE_MESSAGE))
-            {
-                this.state = ConnectionState.Closing;
-                this.killBit = true;
-            }
-            else if (!senders.contains(this.local_uid) &&  verb.equals(PUT))
-            {
-                HandleReadPut(contentLocation, headers.get("Content-Type"), readData, headers.get("ETag"), senders, responsePath);
-            }
-            else if (!senders.contains(this.local_uid) && verb.equals(PUSH))
-            {
-                HandleReadPush(contentLocation, headers.get("Content-Type"), headers.get("ETag"), senders, lastSender, responsePath);
-            }
-            else if (!senders.contains(this.local_uid) && verb.equals(POST))
-            {
-                HandleReadPost(contentLocation, headers.get("Content-Type"), headers.get("Accept"),  senders, readData);
             }
             else if (!senders.contains(this.local_uid) && verb.equals(RESPONSECODE_PROXY))
             {
@@ -1281,6 +1245,23 @@ class DataConnection
                 {
                     // TODO: figure out what this does
                 }
+            }
+            else if (!senders.contains(this.local_uid) && contentLocation.equals(CLOSE_MESSAGE))
+            {
+                this.state = ConnectionState.Closing;
+                this.killBit = true;
+            }
+            else if (!senders.contains(this.local_uid) &&  verb.equals(PUT))
+            {
+                HandleReadPut(contentLocation, headers.get("Content-Type"), readData, headers.get("ETag"), senders, responsePath);
+            }
+            else if (!senders.contains(this.local_uid) && verb.equals(PUSH))
+            {
+                HandleReadPush(contentLocation, headers.get("Content-Type"), headers.get("ETag"), senders, lastSender, responsePath);
+            }
+            else if (!senders.contains(this.local_uid) && verb.equals(POST))
+            {
+                HandleReadPost(contentLocation, headers.get("Content-Type"), headers.get("Accept"),  senders, readData);
             }
             else if (senders.contains(this.local_uid))
             {
@@ -1390,7 +1371,7 @@ class DataConnection
 
                         if (key.equals( CLOSE_MESSAGE))
                         {
-                            this.state = ConnectionState.Closing;
+                            this.state = ConnectionState.FlushingToClose;
                         }
 
                     }

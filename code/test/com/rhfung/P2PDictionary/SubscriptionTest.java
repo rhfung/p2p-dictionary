@@ -1,3 +1,5 @@
+package com.rhfung.P2PDictionary;
+
 import com.rhfung.P2PDictionary.subscription.ISubscriptionChanged;
 import com.rhfung.P2PDictionary.subscription.Subscription;
 import com.rhfung.P2PDictionary.SubscriptionInitiator;

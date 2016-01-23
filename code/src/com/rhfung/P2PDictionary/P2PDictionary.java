@@ -1194,15 +1194,17 @@ import com.rhfung.logging.LogInstructions;
 
             for(DataConnection c : copyConn)
             {
-                if (c.getRemoteUID() != this._localUID &&            // don't send to myself
-                    !msg.PeerList.contains(c.getRemoteUID()) &&       // don't send to previous sender
-                    !c.isWebClientConnected() &&                  // don't send to web browser
-                    !sentTo.contains(c.getRemoteUID()))              // don't send twice
+                boolean isDifferentClient = c.getRemoteUID() != this._localUID &&   // don't send to myself
+                        !msg.PeerList.contains(c.getRemoteUID()) &&                 // don't send to previous sender
+                        !c.isWebClientConnected();                                  // don't send to web browser
+                if (isDifferentClient && !sentTo.contains(c.getRemoteUID()))        // don't send twice
                 {
                     //WriteDebug(this.system_id + " pushes a data packet to " + c.RemoteUID);
                     sentTo.add(c.getRemoteUID());
                     c.SendToRemoteClient(msg);
                     broadcasts++;
+                } else if (isDifferentClient) {
+                    WriteDebug("Not sending again to the remote " + c.getRemoteUID());
                 }
             }
 
@@ -1809,7 +1811,7 @@ import com.rhfung.logging.LogInstructions;
             	for (DataConnection c :  this.connections)
             	{
             		//return this.connections.Exists(x => x.RemoteUID == uniqueID);
-            		if (c.getRemoteUID()  == uniqueID)
+            		if (c.getRemoteUID()  == uniqueID && c.getState() != DataConnection.ConnectionState.Closed)
             			return true;
             	}
             }

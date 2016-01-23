@@ -47,10 +47,26 @@ Taken from examples/first-example/TestRun.java:
 
     // ...
 
-    P2PDictionary node = new P2PDictionary("test", 3333, "test", P2PDictionaryServerMode.AutoRegister, P2PDictionaryClientMode.AutoConnect, 1500);
+    P2PDictionary node = P2PDictionary.builder()
+            .setDescription("test")
+            .setNamespace("test")
+            .setPort(3333)
+            .setServerMode(P2PDictionaryServerMode.AutoRegister)
+            .setClientMode(P2PDictionaryClientMode.AutoConnect)
+            .setClientSearchTimespan(1500)
+            .setLogLevel(System.out, LogInstructions.DEBUG)
+            .build();
+
     // ...
-    node.put(Integer.toString(node.getLocalID()) + "/message0", "hello world");
+
+    node.put("message1", "hello world");
+
     // ...
+
+    Object message1 = node.get("message1");
+
+    // ...
+
     node.close();
 
 See other sample projects in `examples`

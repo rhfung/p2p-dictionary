@@ -538,15 +538,19 @@ import com.rhfung.logging.LogInstructions;
 
         static String getUserKey(String ns, String partition, String fullKey)
         {
-            if (IsFullKeyInNamespace(ns,partition,fullKey))
+            if (isFullKeyInNamespace(ns,partition,fullKey))
                 return fullKey.substring(ns.length() + 1 + partition.length() + 1);
             else
                 throw new IndexOutOfBoundsException("getUserKey should not operate on keys outside of namespace");
         }
 
-        static boolean IsFullKeyInNamespace(String ns, String partition, String fullKey)
+        static boolean isFullKeyInNamespace(String ns, String partition, String fullKey)
         {
             return fullKey.startsWith(ns + "/" + partition + "/");
+        }
+
+        public boolean isFullKey(String key) {
+            return isFullKeyInNamespace(DATA_NAMESPACE, _partition, key);
         }
         
         /// <summary>
@@ -843,7 +847,7 @@ import com.rhfung.logging.LogInstructions;
             {
             	for(String k : this.data.keySet())
             	{
-            		if (IsFullKeyInNamespace(DATA_NAMESPACE, _partition, k))
+            		if (isFullKeyInNamespace(DATA_NAMESPACE, _partition, k))
             			retValue++;
             	}
             }
@@ -1937,8 +1941,8 @@ import com.rhfung.logging.LogInstructions;
             {
                 for ( String k : this.data.keySet())
                 {
-                	//this.data.Where(x => IsFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => getUserKey(DATA_NAMESPACE, _namespace, x.Key)));
-                	if (IsFullKeyInNamespace(DATA_NAMESPACE, _partition, k))
+                	//this.data.Where(x => isFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => getUserKey(DATA_NAMESPACE, _namespace, x.Key)));
+                	if (isFullKeyInNamespace(DATA_NAMESPACE, _partition, k))
                 		retValue.add( getUserKey(DATA_NAMESPACE, _partition, k));
                 }
                 
@@ -1956,7 +1960,7 @@ import com.rhfung.logging.LogInstructions;
 //          dataLock.EnterReadLock();
 //          try
 //          {
-//              retValue = new List<KeyValuePair<string, object>>(this.data.Where(x => IsFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => new KeyValuePair<string, object>(getUserKey(DATA_NAMESPACE, _namespace, x.Key), x.Value.value))).GetEnumerator();
+//              retValue = new List<KeyValuePair<string, object>>(this.data.Where(x => isFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => new KeyValuePair<string, object>(getUserKey(DATA_NAMESPACE, _namespace, x.Key), x.Value.value))).GetEnumerator();
 //          }
 //          finally
 //          {
@@ -1971,7 +1975,7 @@ import com.rhfung.logging.LogInstructions;
 			{
 				for(String k : data.keySet())
 				{
-					if (IsFullKeyInNamespace(DATA_NAMESPACE, _partition, k))
+					if (isFullKeyInNamespace(DATA_NAMESPACE, _partition, k))
 					{
 						val.add(data.get(k));
 					}
@@ -1993,8 +1997,8 @@ import com.rhfung.logging.LogInstructions;
             {
                 for ( Entry<String, DataEntry> k : this.data.entrySet())
                 {
-                	//this.data.Where(x => IsFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => getUserKey(DATA_NAMESPACE, _namespace, x.Key)));
-                	if (IsFullKeyInNamespace(DATA_NAMESPACE, _partition, k.getKey()))
+                	//this.data.Where(x => isFullKeyInNamespace(DATA_NAMESPACE, _namespace, x.Key)).Select(x => getUserKey(DATA_NAMESPACE, _namespace, x.Key)));
+                	if (isFullKeyInNamespace(DATA_NAMESPACE, _partition, k.getKey()))
                 	{
                 		final String key = getUserKey(DATA_NAMESPACE, _partition, k.getKey());
                 		final Object value = k.getValue().value;
@@ -2028,13 +2032,16 @@ import com.rhfung.logging.LogInstructions;
 
 		@Override
 		public boolean isEmpty() {
-			// TODO Auto-generated method stub
 			return size() == 0;
 		}
 
 		@Override
 		public String getFullKey(String userKey) {
-			// TODO Auto-generated method stub
 			return P2PDictionary.getFullKey(DATA_NAMESPACE, this._partition, userKey);
 		}
+
+        @Override
+        public String getUserKey(String fullKey) {
+            return P2PDictionary.getUserKey(DATA_NAMESPACE, this._partition, fullKey);
+        }
 }

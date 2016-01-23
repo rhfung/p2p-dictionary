@@ -40,6 +40,8 @@ public class NetworkUtil {
 	public static final int VALUE_MOVED = 301;
 	public static final int VALUE_PROXY = 305;
 	public static final int VALUE_PROXY2 = 307;
+	public static final int VALUE_BAD_REQUEST = 400;
+	public static final int VALUE_FORBIDDEN = 403;
 	public static final int VALUE_NOTFOUND = 404;
 	public static final int VALUE_BADMETHOD = 405;
 	public static final int VALUE_INTERNAL_SERVER_ERROR = 500;
@@ -61,7 +63,7 @@ public class NetworkUtil {
 	
 	/**
 	 * Checks to see if a specific port is available.
-	 * @see http://stackoverflow.com/questions/434718/sockets-discover-port-availability-using-java
+	 * http://stackoverflow.com/questions/434718/sockets-discover-port-availability-using-java
 	 * @param port the port to check for availability
 	 */
 	private static boolean available(int port) {
@@ -95,4 +97,66 @@ public class NetworkUtil {
 	    return false;
 	}
 
+	public static String getErrorMessage(int errorNum)
+    {
+        switch (errorNum)
+        {
+            case VALUE_GOOD:
+                return "OK";
+            case VALUE_MOVED: // default homepage
+                return "Moved Permanently";
+            case VALUE_PROXY: // missing
+                return "Use Proxy";
+            case VALUE_PROXY2: // missing
+                return "Special Proxy";
+			case VALUE_BAD_REQUEST:
+				return "Bad Request";
+			case VALUE_FORBIDDEN:
+				return "Forbidden";
+            case VALUE_NOTFOUND: // deleted
+                return "Not Found";
+            case VALUE_BADMETHOD: // unused
+                return "Method Not Allowed";
+            case VALUE_INTERNAL_SERVER_ERROR: // handle read
+                return "Internal Server Error";
+            case VALUE_NOT_IMPLEMENTED: // POST
+                return "Not Implemented";
+            default:
+                return "Unknown";
+        }
+    }
+
+	static class ContentDisposition {
+		public String type;
+		public String name;
+		public String filename;
+	}
+
+	static ContentDisposition parseContentDisposition(String contentDispositionString) {
+		ContentDisposition obj = new ContentDisposition();
+
+		String[] parts = contentDispositionString.split(";");
+		if (parts.length > 0) {
+			obj.type = parts[0];
+		}
+		for (int i = 1; i < parts.length; i++) {
+			String[] keyValue = parts[i].split("=", 2);
+			if (keyValue.length == 2) {
+				String key = keyValue[0].trim();
+				String value = keyValue[1].trim();
+
+				if (value.startsWith("\"") && value.endsWith("\"")) {
+					value = value.substring(1, value.length() - 1);
+				}
+
+				if (key.equals("name")) {
+					obj.name = value;
+				} else if (key.equals("filename")) {
+					obj.filename = value;
+				}
+			}
+		}
+
+		return obj;
+	}
 }

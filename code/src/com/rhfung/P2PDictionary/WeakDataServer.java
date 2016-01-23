@@ -179,6 +179,25 @@ class WeakDataServer implements IMessageController
 	}
 
 	@Override
+	public String getUserKey(String fullKey) {
+		P2PDictionary d= m_target.get();
+		if (d!=null)
+			return d.getUserKey(fullKey);
+		else
+			return fullKey;
+	}
+
+	@Override
+	public boolean isFullKey(String key) {
+		P2PDictionary d= m_target.get();
+		if (d!=null)
+			return d.isFullKey(key);
+		else
+			return false;
+	}
+
+
+	@Override
 	public Object put(String key, Object value) {
 		// TODO Auto-generated method stub
 		P2PDictionary d= m_target.get();

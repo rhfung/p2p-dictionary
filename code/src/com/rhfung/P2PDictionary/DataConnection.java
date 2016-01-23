@@ -29,13 +29,10 @@ package com.rhfung.P2PDictionary;
 // limitation in revision #
 // once it rolls negative, the whole thing falls apart
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
+import java.io.*;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
@@ -47,6 +44,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 
 import com.rhfung.P2PDictionary.subscription.Subscription;
 import com.rhfung.logging.LogInstructions;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.fileupload.MultipartStream;
 
 import com.fasterxml.jackson.core.JsonEncoding;
@@ -93,8 +91,12 @@ class DataConnection
         
         private static final String RESOURCE_INDEX = "/index.html";
         private static final String RESOURCE_ERROR = "/error.html";
-        
-        
+        public static final String CONTENT_TYPE_BASE_64 = "base64";
+        public static final String CONTENT_TRANSFER_ENCODING = "Content-Transfer-Encoding";
+        private final String MIME_TYPE_JSON = "application/json";
+        private final String CONTENT_TYPE = "Content-Type";
+        private final String HEADER_ACCEPT = "Accept";
+
 
         private int local_uid = 0;
         private int remote_uid = 0;
@@ -451,6 +453,13 @@ class DataConnection
             }
         }
 
+        private void WriteDebug(int level, String msg) {
+            if (debugBuffer != null)
+            {
+                debugBuffer.Log(level, msg, true);
+            }
+        }
+
         /// <summary>
         /// Thread's main function.
         /// </summary>
@@ -757,15 +766,11 @@ class DataConnection
             // latter half of condition is only for web browsers
             if (resource.equals( DATA_NAMESPACE) || resource.equals(DATA_NAMESPACE + "/"))
             {
-            	boolean retJson = false;
-            	if (headers.containsKey("Accept"))
-    				retJson = headers.get("Accept").contains("application/json");
-            	
-                // whole dictionary
-            	if (retJson)
-            		ResponseDictionaryJson(verb, memBuffer.createStreamWriter(), GetListOfThisLocalID(), null, browserRequest);
-            	else
-            		ResponseDictionaryText(verb, memBuffer.createStreamWriter(), GetListOfThisLocalID(), null, browserRequest);
+                String accept = null;
+                if (headers.containsKey("Accept")) {
+                    accept = headers.get("Accept");
+                }
+            	ResponseDictionary(verb, accept, memBuffer.createStreamWriter(), GetListOfThisLocalID(), null, browserRequest);
             }
             else if (resource.equals( ROOT_NAMESPACE))
             {
@@ -971,6 +976,11 @@ class DataConnection
         {
             final String CONTENT_TYPE_MULTI_PART = "multipart/form-data";
         	final String BOUNDARY = "boundary=";
+
+            if (contentType == null) {
+                return null;
+            }
+
         	int startIndex = contentType.indexOf(BOUNDARY);
             int isMultiPart = contentType.indexOf(CONTENT_TYPE_MULTI_PART);
         	if (isMultiPart >= 0 && startIndex >= isMultiPart)
@@ -982,99 +992,147 @@ class DataConnection
         /**
          * Handles regular web POST methods.
          */
-        private void HandleReadPost(String contentLocation, String contentType, String accepts, ListInt senders, byte[] payload)
+        private void HandleReadPost(String contentLocation, String contentType, String contentTransferEncoding, String alternativeContentLocation, String accepts, ListInt senders, byte[] payload)
         {
             if (contentLocation.equals(ADDENTRY_NS_API) || 
                 contentLocation.equals(ADDENTRY_NS_BYTES_API)||
                 contentLocation.equals(ADDENTRY_NS_MIME_API))
             {
             	boolean sendMime = contentLocation.equals(ADDENTRY_NS_MIME_API);
-            	
-            	String boundary = getMultiPartBoundaryFromContentType(contentType);
-            	if (boundary == null)
-            	{
+                String boundary = getMultiPartBoundaryFromContentType(contentType);
+
+                if (contentType != null && contentType.equals("application/x-www-form-urlencoded"))
+                {
+                    String formData = new String(payload, StandardCharsets.US_ASCII);
+                    String pairs[] = formData.split("&");
+
+                    boolean isValidData = true;
+
+                    for (String pair : pairs) {
+                        String keyValue[] = pair.split("=", 2);
+                        if (keyValue.length == 1) {
+                            WriteDebug(LogInstructions.DEBUG, "Key " + keyValue[0] + " has no assigned value, skipping");
+                            isValidData = false;
+                        } else {
+                            try {
+                                keyValue[0] = URLDecoder.decode(keyValue[0], "US-ASCII");
+                                keyValue[1] = URLDecoder.decode(keyValue[1], "US-ASCII");
+                            } catch (UnsupportedEncodingException ex) {
+                                WriteDebug(LogInstructions.DEBUG, "Unable to decode key/value pair for key=" + keyValue[0]);
+                                isValidData = false;
+                            }
+                        }
+                    }
+
+                    if (isValidData) {
+                        for (String pair : pairs) {
+                            String keyValue[] = pair.split("=", 2);
+                            try {
+                                keyValue[0] = URLDecoder.decode(keyValue[0], "US-ASCII");
+                                keyValue[1] = URLDecoder.decode(keyValue[1], "US-ASCII");
+                            } catch (UnsupportedEncodingException ex) {
+                                controller.put(keyValue[0], keyValue[1]);
+                            }
+                        }
+
+                        MemoryStream bufferedOutput = new MemoryStream();
+                        ResponseDictionary(GET, accepts, bufferedOutput.createStreamWriter(), senders, GetListOfThisLocalID(), true);
+                        synchronized (sendBuffer)
+                        {
+                            sendBuffer.add(bufferedOutput);
+                        }
+                    } else {
+                        MemoryStream bufferedOutput = new MemoryStream();
+                        WriteErrorNotFound(bufferedOutput.createStreamWriter(), GET, contentLocation, NetworkUtil.VALUE_BAD_REQUEST);
+                        synchronized (sendBuffer) {
+                            sendBuffer.add(bufferedOutput);
+                        }
+                    }
+                }
+                else if (contentType != null && contentType.equals("application/octet-stream") && alternativeContentLocation != null) {
+                    if (controller.isFullKey(alternativeContentLocation)) {
+                        alternativeContentLocation = controller.getUserKey(alternativeContentLocation);
+                    }
+
+                    if (contentTransferEncoding != null && contentTransferEncoding.toLowerCase().equals(CONTENT_TYPE_BASE_64)) {
+                        controller.put(alternativeContentLocation, Base64.decodeBase64(payload));
+                    } else {
+                        controller.put(alternativeContentLocation, payload);
+                    }
+
+                    MemoryStream bufferedOutput = new MemoryStream();
+                    ResponseDictionary(GET, accepts, bufferedOutput.createStreamWriter(), senders, GetListOfThisLocalID(), true);
+                    synchronized (sendBuffer)
+                    {
+                        sendBuffer.add(bufferedOutput);
+                    }
+                }
+                else if (boundary != null) {
+                    String filename = "content";
+                    try {
+
+
+                        MultipartStream multipartStream = new MultipartStream(new ByteArrayInputStream(payload), boundary.getBytes());
+                        boolean nextPart = multipartStream.skipPreamble();
+
+                        while (nextPart) {
+
+                            String header = multipartStream.readHeaders();
+                            Hashtable<String, String> hdr = ReadHeaders(new InputStreamReader(new ByteArrayInputStream(header.getBytes())));
+                            String val = hdr.get("Content-Disposition");
+
+                            if (val != null) {
+                                NetworkUtil.ContentDisposition cd = NetworkUtil.parseContentDisposition(val);
+                                if (cd.name != null) {
+                                    filename = cd.name;
+                                } else if (cd.filename != null) {
+                                    filename = cd.filename;
+                                }
+                            }
+
+                            // process headers
+                            // create some output stream
+                            ByteArrayOutputStream output = new ByteArrayOutputStream();
+                            multipartStream.readBodyData(output);
+                            if (sendMime && hdr.get("Content-Type") != null) { // use MIME type where suggested
+                                String valType = hdr.get("Content-Type");
+                                controller.put(filename, new MIMEByteObject(valType, output.toByteArray()));
+                            } else if (hdr.get(CONTENT_TRANSFER_ENCODING) != null && hdr.get(CONTENT_TRANSFER_ENCODING).equals(CONTENT_TYPE_BASE_64)) {
+                                controller.put(filename, Base64.decodeBase64(output.toByteArray()));
+                            } else {
+                                controller.put(filename, output.toByteArray());
+                            }
+                            nextPart = multipartStream.readBoundary();
+                        }
+
+                        // only reply back with ONE file uploaded
+                        MemoryStream bufferedOutput = new MemoryStream();
+                        ResponseDictionary(GET, accepts, bufferedOutput.createStreamWriter(), senders, GetListOfThisLocalID(), true);
+                        synchronized (sendBuffer) {
+                            sendBuffer.add(bufferedOutput);
+                        }
+
+                    } catch (Exception e) {
+                        MemoryStream bufferedOutput = new MemoryStream();
+                        WriteErrorNotFound(bufferedOutput.createStreamWriter(), GET, contentLocation, NetworkUtil.VALUE_NOT_IMPLEMENTED);
+                        synchronized (sendBuffer) {
+                            sendBuffer.add(bufferedOutput);
+                        }
+                    }
+
+                } else {
                     MemoryStream bufferedOutput = new MemoryStream();
                     WriteErrorNotFound(bufferedOutput.createStreamWriter(), "GET", contentLocation, NetworkUtil.VALUE_NOT_IMPLEMENTED);
                     synchronized (sendBuffer)
                     {
                         sendBuffer.add(bufferedOutput);
                     }
-            		return;
-            	}
-            	
-            	String filename = "content";
-            	try {
-            		
-            		
-            		MultipartStream multipartStream = new MultipartStream(new ByteArrayInputStream(payload), boundary.getBytes());
-            	     boolean nextPart = multipartStream.skipPreamble();
-            	     
-            	     while(nextPart) {
-            	       
-            	    	String header = multipartStream.readHeaders();
-            	    	Hashtable<String, String> hdr = ReadHeaders(new InputStreamReader(new ByteArrayInputStream(header.getBytes())) );
-            	    	String val = hdr.get("Content-Disposition");
-            	    	
-            	    	if (val !=null)
-            	    	{
-            	    		final String FILENAME = "filename=\"";
-            	    		int filenameIdx= val.indexOf(FILENAME);
-            	    		filename = val.substring( filenameIdx + FILENAME.length(), val.indexOf("\"", filenameIdx + FILENAME.length()));
-            	    		
-            	    	}
-            	    	
-            	       // process headers
-            	       // create some output stream
-            	       ByteArrayOutputStream output = new ByteArrayOutputStream();
-            	       multipartStream.readBodyData(output);
-            	       if (sendMime)
-            	       {
-            	    	   String valType = hdr.get("Content-Type");
-            	    	   controller.put(filename, new MIMEByteObject(valType, output.toByteArray()));
-            	       }
-            	    	   
-            	       else
-            	       {
-            	    	   controller.put(filename, output.toByteArray());
-            	       }
-            	       nextPart = multipartStream.readBoundary();
-            	     }
-
-            	     // only reply back with ONE file uploaded
-                 	MemoryStream bufferedOutput = new MemoryStream();
-                	String key = controller.getFullKey(filename);
-                	dataLock.readLock().lock();
-                	try
-                	{
-                		DataEntry entry = data.get(key);
-                		WriteResponseInfo(bufferedOutput.createStreamWriter(),  ADDENTRY_NS_API, entry);
-                		synchronized (sendBuffer)
-                        {
-                            sendBuffer.add(bufferedOutput);
-                        }
-                	}
-                	finally
-                	{
-                		dataLock.readLock().unlock();
-                	}
-
-                	
-            	} catch(Exception e) {
-            		MemoryStream bufferedOutput = new MemoryStream();
-                    WriteErrorNotFound(bufferedOutput.createStreamWriter(), "GET", contentLocation, NetworkUtil.VALUE_NOT_IMPLEMENTED);
-                    synchronized (sendBuffer)
-                    {
-                        sendBuffer.add(bufferedOutput);
-                    }
-        	   }
-            	
-            	
-            	
+                }
             }
             else
             {
             	MemoryStream bufferedOutput = new MemoryStream();
-                WriteErrorNotFound(bufferedOutput.createStreamWriter(), "GET", contentLocation, NetworkUtil.VALUE_NOT_IMPLEMENTED);
+                WriteErrorNotFound(bufferedOutput.createStreamWriter(), GET, contentLocation, NetworkUtil.VALUE_FORBIDDEN);
                 synchronized (sendBuffer)
                 {
                     sendBuffer.add(bufferedOutput);
@@ -1271,7 +1329,12 @@ class DataConnection
             }
             else if (!senders.contains(this.local_uid) && verb.equals(POST))
             {
-                HandleReadPost(contentLocation, headers.get("Content-Type"), headers.get("Accept"),  senders, readData);
+                HandleReadPost(contentLocation,
+                        headers.get(CONTENT_TYPE),
+                        headers.get(CONTENT_TRANSFER_ENCODING),
+                        headers.get(HEADER_LOCATION),
+                        headers.get(HEADER_ACCEPT),
+                        senders, readData);
             }
             else if (senders.contains(this.local_uid))
             {
@@ -1596,6 +1659,20 @@ class DataConnection
             return null;
         }
 
+        private void ResponseDictionary(String verb, String accepts, StreamWriter writer, ListInt senderList, ListInt proxyResponsePath, boolean willClose) {
+            boolean retJson = false;
+            if (accepts != null) {
+                retJson = accepts.contains(MIME_TYPE_JSON);
+            }
+
+            // whole dictionary
+            if (retJson) {
+                ResponseDictionaryJson(verb, writer, senderList, proxyResponsePath, willClose);
+            }
+            else {
+                ResponseDictionaryText(verb, writer, senderList, proxyResponsePath, willClose);
+            }
+        }
 
         // respond to GET/HEAD or push data on wire
         private void ResponseDictionaryText(String verb, StreamWriter writer, ListInt senderList, ListInt proxyResponsePath, boolean willClose)
@@ -2720,36 +2797,11 @@ throws JsonGenerationException, IOException
             return new ETag(eTag);
         }
 
-        private static String GetErrorMessage(int errorNum)
-        {
-            switch (errorNum)
-            {
-                case NetworkUtil.VALUE_GOOD:
-                    return "OK";
-                case NetworkUtil.VALUE_MOVED: // default homepage
-                	return "Moved Permanently";
-                case NetworkUtil.VALUE_PROXY: // missing
-                    return "Use Proxy";
-                case NetworkUtil.VALUE_PROXY2: // missing
-                    return "Special Proxy";
-                case NetworkUtil.VALUE_NOTFOUND: // deleted
-                    return "Not Found";
-                case NetworkUtil.VALUE_BADMETHOD: // unused
-                    return "Method Not Allowed";
-                case NetworkUtil.VALUE_INTERNAL_SERVER_ERROR: // handle read
-                	return "Internal Server Error";
-                case NetworkUtil.VALUE_NOT_IMPLEMENTED: // POST
-                	return "Not Implemented";
-                default:
-                    return "Unknown";
-            }
-        }
-
         private void WriteErrorNotFound(StreamWriter writer, String verb, String contentLocation, int errorNumber)
         {
-            String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString( errorNumber), GetErrorMessage(errorNumber));
+            String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString( errorNumber), NetworkUtil.getErrorMessage(errorNumber));
 
-            writer.writeLine("HTTP/1.1 " + Integer.toString( errorNumber) + " " + GetErrorMessage(errorNumber));
+            writer.writeLine("HTTP/1.1 " + Integer.toString( errorNumber) + " " + NetworkUtil.getErrorMessage(errorNumber));
             writer.writeLine("Content-Type: text/html");
             writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
             if (errorNumber == NetworkUtil.VALUE_MOVED) {
@@ -2766,9 +2818,9 @@ throws JsonGenerationException, IOException
 
         private void WriteErrorNotFound(StreamWriter writer, String verb, String contentLocation, int errorNumber, ListInt senderList)
         {
-            String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString(errorNumber), GetErrorMessage(errorNumber));
+            String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString(errorNumber), NetworkUtil.getErrorMessage(errorNumber));
 
-            writer.writeLine("HTTP/1.1 " + errorNumber +  " " + GetErrorMessage(errorNumber));
+            writer.writeLine("HTTP/1.1 " + errorNumber +  " " + NetworkUtil.getErrorMessage(errorNumber));
             writer.writeLine("Content-Type: text/html");
             writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
             writer.writeLine("Content-Length: " + payload.length());
@@ -2783,8 +2835,8 @@ throws JsonGenerationException, IOException
 
         private void ResponseCode(StreamWriter writer, String contentLocation, ListInt senderList, int dataOwner, int dataRevision, int code)
         {
-            String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString(code), GetErrorMessage(code));
-            writer.writeLine("HTTP/1.1 " + code + " " + GetErrorMessage(code));
+            String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString(code), NetworkUtil.getErrorMessage(code));
+            writer.writeLine("HTTP/1.1 " + code + " " + NetworkUtil.getErrorMessage(code));
             writer.writeLine("Content-Type: text/html");
             writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
             writer.writeLine("Content-Length: " + Integer.toString( payload.length()));
@@ -2800,9 +2852,9 @@ throws JsonGenerationException, IOException
         private void ResponseFollowProxy(StreamWriter writer, String contentLocation, ListInt senderList)
         {
             final int code = NetworkUtil.VALUE_PROXY2;
-            String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString(code), GetErrorMessage(code));
+            String payload = formatString(getFileInPackage(RESOURCE_ERROR), Integer.toString(code), NetworkUtil.getErrorMessage(code));
 
-            writer.writeLine("HTTP/1.1 " + code + " " + GetErrorMessage(code));
+            writer.writeLine("HTTP/1.1 " + code + " " + NetworkUtil.getErrorMessage(code));
 
             writer.writeLine("Content-Type: text/html");
             writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
@@ -2821,7 +2873,7 @@ throws JsonGenerationException, IOException
         	final int code = NetworkUtil.VALUE_GOOD;
 			byte[] payload = GetEntryMetadataAsJson(entry);
         	
-        	writer.writeLine("HTTP/1.1 " + code + " " + GetErrorMessage(code));
+        	writer.writeLine("HTTP/1.1 " + code + " " + NetworkUtil.getErrorMessage(code));
         	writer.writeLine("Content-Type: application/json");
         	writer.writeLine(HEADER_LOCATION + ": " + contentLocation);
         	writer.writeLine("Content-Length: " + Integer.toString(payload.length));
@@ -2833,7 +2885,7 @@ throws JsonGenerationException, IOException
 
         private void WriteResponseDeleted(StreamWriter writer, String contentLocation, ListInt senderList, ListInt proxyResponsePath, int dataOwner, int dataRevision)
         {
-            String payload = formatString(getFileInPackage(RESOURCE_ERROR), NetworkUtil.RESPONSE_STR_DELETED, GetErrorMessage(NetworkUtil.VALUE_NOTFOUND));
+            String payload = formatString(getFileInPackage(RESOURCE_ERROR), NetworkUtil.RESPONSE_STR_DELETED, NetworkUtil.getErrorMessage(NetworkUtil.VALUE_NOTFOUND));
             writer.writeLine("HTTP/1.1 404 Not Found");
             writer.writeLine("Content-Type: text/html");
             writer.writeLine(HEADER_LOCATION + ": " + contentLocation);

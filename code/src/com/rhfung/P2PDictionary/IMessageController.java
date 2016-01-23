@@ -79,6 +79,10 @@ interface IMessageController {
     boolean containsKey(String key);
     
     String getFullKey(String userKey);
+
+    String getUserKey(String fullKey);
+
+    boolean isFullKey(String key);
     
     Object put(String key, Object value);
 

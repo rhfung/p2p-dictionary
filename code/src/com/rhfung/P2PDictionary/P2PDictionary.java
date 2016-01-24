@@ -948,8 +948,6 @@ import com.rhfung.logging.LogInstructions;
                             t.setName(getDescription() + " Server thread " + s.getRemoteSocketAddress().toString());
                             t.start();
                             WriteDebug("Server: Connection opened");
-
-
                         }
                         catch(SocketTimeoutException ex)
                         {

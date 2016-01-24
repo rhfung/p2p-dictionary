@@ -1237,7 +1237,7 @@ class DataConnection
             {
                 if (headers.get("Connection").equals("close"))
                 {
-                    this.state = ConnectionState.Closing;
+                    this.state = ConnectionState.FlushingToClose;
                 }
             }
 
@@ -1284,7 +1284,7 @@ class DataConnection
             }
             else if (!senders.contains(this.local_uid) && contentLocation.equals(CLOSE_MESSAGE))
             {
-                this.state = ConnectionState.Closing;
+                this.state = ConnectionState.FlushingToClose;
                 this.killBit = true;
             }
             else if (!senders.contains(this.local_uid) &&  verb.equals(PUT))
@@ -1360,7 +1360,7 @@ class DataConnection
 
                 if (this.state == ConnectionState.WebClientConnected) {
                     WriteDebug("Finished responding to a web browser");
-                    this.state = ConnectionState.Closing;
+                    this.state = ConnectionState.FlushingToClose;
                 }
 
                 bufferedOutput.dispose();
@@ -1413,7 +1413,7 @@ class DataConnection
 
                         if (key.equals( CLOSE_MESSAGE))
                         {
-                            this.state = ConnectionState.Closing;
+                            this.state = ConnectionState.FlushingToClose;
                         }
 
                     }
@@ -1493,8 +1493,10 @@ class DataConnection
 	                	{
 	                		return builder.toString();
 	                	}
-	                	if (killBit) // truncate line reading
-	                		return builder.toString();
+                        // truncate line reading in killBit
+	                	if (killBit || (byte2 == -1 && state == ConnectionState.Closing)) {
+                            return builder.toString();
+                        }
 	                }
 	            }
             

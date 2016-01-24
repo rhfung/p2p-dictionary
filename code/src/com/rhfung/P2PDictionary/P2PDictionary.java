@@ -1207,7 +1207,7 @@ import com.rhfung.logging.LogInstructions;
                     sentTo.add(c.getRemoteUID());
                     c.SendToRemoteClient(msg);
                     broadcasts++;
-                } else if (isDifferentClient) {
+                } else if (isDifferentClient && !c.isWebClientConnected()) {
                     WriteDebug("Not sending again to the remote " + c.getRemoteUID());
                 }
             }

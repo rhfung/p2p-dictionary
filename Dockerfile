@@ -23,4 +23,4 @@ EXPOSE 8765
 
 ENTRYPOINT ["/usr/p2pd/bin/start"]
 
-CMD ["-debug"]
+CMD ["--debug"]

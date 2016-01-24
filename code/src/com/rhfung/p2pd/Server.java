@@ -15,9 +15,9 @@ public class Server {
     public static void main(String[] args) {
         Options options = new Options();
         options.addOption("m", "description", true, "Description for the server");
-        options.addOption("p", true, "Port that the server binds to");
+        options.addOption("p", true, "Bind to port default:8765");
         options.addOption("ns", "namespace", true, "Namespace for the server");
-        options.addOption("t", "timespan", true, "Search timespan for clients");
+        options.addOption("t", "timespan", true, "Search interval for clients");
         options.addOption("d", "discovery", true, "Backend discovery mechanism: none, win-bonjour");
         options.addOption("h", "help", true, "Show this help");
         options.addOption(Option.builder()
@@ -29,12 +29,18 @@ public class Server {
                 .longOpt("nopattern")
                 .desc("Monitors no patterns")
                 .build());
-        options.addOption("debug", false, "Enable debugging mode");
-        options.addOption("fulldebug", false, "Enable debugging mode");
-        options.addOption(Option.builder("c")
-                .longOpt("clients")
-                .argName("hosts")
-                .desc("Provide clients in the form hostname:port,hostname:port,... (separated by comma)")
+        options.addOption(Option.builder()
+                .longOpt("debug")
+                .desc("Enable debugging mode")
+                .build());
+        options.addOption(Option.builder()
+                .longOpt("fulldebug")
+                .desc("Enable debugging mode")
+                .build());
+        options.addOption(Option.builder("n")
+                .longOpt("nodes")
+                .argName("host:port")
+                .desc("Provide clients in the form hostname:port,hostname:port,... (separated by commas)")
                 .hasArgs()
                 .valueSeparator(',')
                 .build());
@@ -128,8 +134,8 @@ public class Server {
 
         System.out.println("Started server");
 
-        if (cmd.hasOption("clients")) {
-            String[] clientList = cmd.getOptionValues("clients");
+        if (cmd.hasOption("nodes")) {
+            String[] clientList = cmd.getOptionValues("nodes");
             for (String client: clientList) {
                 String parts[] = client.split(":", 2);
                 try {

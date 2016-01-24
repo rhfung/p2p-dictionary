@@ -204,7 +204,7 @@ class DataConnection
             {
                 int counter = 0;
                 // spin wait
-                while (this.state != ConnectionState.Closed && counter < 10) // ~ 1 second
+                while (this.state != ConnectionState.Closed && counter < 3) // ~ 300 ms
                 {
                     try {
 						Thread.sleep(P2PDictionary.SLEEP_WAIT_TO_CLOSE);
@@ -477,8 +477,9 @@ class DataConnection
 
                 while (client.isConnected() && !killBit && (state != ConnectionState.Closing))
                 { 
-                    if (!HandleRead(reader))
-                    	break;	
+                    if (!HandleRead(reader)) {
+                        break;
+                    }
                 }
             }
             catch (IOException ex)
@@ -522,7 +523,7 @@ class DataConnection
         	}
         	catch(IOException ex)
         	{
-        		state =  ConnectionState.Closing;
+        		state = ConnectionState.Closing;
         		return false;
         	}
 
@@ -672,8 +673,7 @@ class DataConnection
 
                             //close at convenience
                             this.remote_uid = remoteID;
-                            // TODO: Debug the closing process
-//                            this.state = ConnectionState.FlushingToClose;
+                            this.state = ConnectionState.FlushingToClose;
 
                         } else {
                             WriteDebug("Detected a duplicate connection, waiting for " + remoteID + " to close");
@@ -723,44 +723,12 @@ class DataConnection
         {
 
             MemoryStream memBuffer = new MemoryStream();
-        	
-            
-            // this part is very simple
-            // just look up the data that the other side requested and give the data
+            boolean browserRequest = DetectBrowser(headers);
 
-            // detect for web browser
-            //bytesRead += command.Length + NetworkDelay.CountHeaders(headers);
-
-
-//#if SIMULATION
-//                            // 8 - 81ms delay in N.America      http://ipnetwork.bgtmo.ip.att.net/pws/network_delay.html
-//                            // 100 Mb/s link
-//                            Thread.Sleep(NetworkDelay.GetLatency(8, 81, 13107200, bytesRead));
-//#endif
-
-                boolean browserRequest = DetectBrowser(headers);
-                
-
-                
-//                {
-//    				String[] res = resource.split("\\?", 2);
-//    				resource = res[0];
-//    				String query = res.length > 1 ? res[1] : null;
-//    				
-//    				
-//    				if (query != null)
-//    				{
-//    					String[] q = query.split("#", 2);
-//    					
-//    					 Map<String,String> queries= getQueryMap(q[0]);
-//    					 if (queries.containsKey("format") )
-//    					 {
-//    						 retJson = queries.get("format").equals("json");
-//    					 }
-//    				}
-//    				
-//
-//                }
+            // allow web browser cache bypass trick
+            if (resource.contains("?") && browserRequest) {
+                resource = resource.substring(0, resource.indexOf('?'));
+            }
 
             // see which resource is being accessed
             // latter half of condition is only for web browsers
@@ -1391,6 +1359,7 @@ class DataConnection
                 }
 
                 if (this.state == ConnectionState.WebClientConnected) {
+                    WriteDebug("Finished responding to a web browser");
                     this.state = ConnectionState.Closing;
                 }
 
@@ -1444,7 +1413,7 @@ class DataConnection
 
                         if (key.equals( CLOSE_MESSAGE))
                         {
-                            this.state = ConnectionState.FlushingToClose;
+                            this.state = ConnectionState.Closing;
                         }
 
                     }

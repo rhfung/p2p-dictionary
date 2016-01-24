@@ -673,7 +673,8 @@ class DataConnection
 
                             //close at convenience
                             this.remote_uid = remoteID;
-                            this.state = ConnectionState.FlushingToClose;
+                            // TODO: duplicate connection disconnect not handled properly
+                            // this.state = ConnectionState.FlushingToClose;
 
                         } else {
                             WriteDebug("Detected a duplicate connection, waiting for " + remoteID + " to close");

@@ -42,6 +42,7 @@ import java.util.Queue;
 import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
 
+import com.rhfung.P2PDictionary.peers.EndpointInfo;
 import com.rhfung.P2PDictionary.subscription.Subscription;
 import com.rhfung.logging.LogInstructions;
 import org.apache.commons.codec.binary.Base64;

@@ -46,6 +46,7 @@ import com.rhfung.Interop.NotSupportedException;
 import com.rhfung.Interop.TcpClient;
 import com.rhfung.P2PDictionary.callback.DefaultCallback;
 import com.rhfung.P2PDictionary.callback.IDictionaryCallback;
+import com.rhfung.P2PDictionary.peers.EndpointInfo;
 import com.rhfung.P2PDictionary.peers.NoDiscovery;
 import com.rhfung.P2PDictionary.peers.PeerDiscovery;
 import com.rhfung.P2PDictionary.peers.PeerInterface;

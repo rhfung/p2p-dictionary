@@ -22,16 +22,11 @@ package com.rhfung.P2PDictionary.peers;
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-import com.rhfung.P2PDictionary.EndpointInfo;
 import com.rhfung.P2PDictionary.P2PDictionary;
-import com.rhfung.P2PDictionary.peers.NoDiscovery;
-import com.rhfung.P2PDictionary.peers.PeerInterface;
 import com.rhfung.logging.LogInstructions;
 
-import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Vector;
 
 
 /**
@@ -40,12 +35,14 @@ import java.util.Vector;
  *
  */
 public class PeerDiscovery {
-	private static Hashtable<Integer, List<EndpointInfo>> m_discoveredPeers;
+	public static final String ZEROCONF_NAME = "_com-rhfung-peer._tcp.local.";
+
+	private static Hashtable<Integer, EndpointList> m_discoveredPeers;
 	private LogInstructions m_log;
 
-	public synchronized static Hashtable<Integer, List<EndpointInfo>> getDiscoveredPeers() {
+	public synchronized static Hashtable<Integer, EndpointList> getDiscoveredPeers() {
 		if (m_discoveredPeers == null) {
-			m_discoveredPeers = new Hashtable<Integer, List<EndpointInfo>>();
+			m_discoveredPeers = new Hashtable<Integer, EndpointList>();
 		}
 		return  m_discoveredPeers;
 	}

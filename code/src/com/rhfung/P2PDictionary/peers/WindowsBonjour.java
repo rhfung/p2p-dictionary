@@ -1,7 +1,6 @@
 package com.rhfung.P2PDictionary.peers;
 
 import com.apple.dnssd.*;
-import com.rhfung.P2PDictionary.EndpointInfo;
 import com.rhfung.P2PDictionary.P2PDictionary;
 
 import java.net.UnknownHostException;
@@ -11,8 +10,6 @@ import java.util.Vector;
  * Discover peers using Apple Bonjour on Windows.
  */
 public class WindowsBonjour implements PeerInterface {
-    private static final String ZEROCONF_NAME = "_com-rhfung-peer._tcp";
-
     private volatile boolean killBitDiscovery = false;
 
     private volatile DNSSDRegistration reg = null;
@@ -44,7 +41,7 @@ public class WindowsBonjour implements PeerInterface {
 
                     if (!PeerDiscovery.getDiscoveredPeers().containsKey(uidInt))
                     {
-                        PeerDiscovery.getDiscoveredPeers().put(uidInt, new Vector<EndpointInfo>(0));
+                        PeerDiscovery.getDiscoveredPeers().put(uidInt, new EndpointList());
                     }
                 }
 
@@ -84,7 +81,7 @@ public class WindowsBonjour implements PeerInterface {
             service.stop();
 
         try {
-            service = DNSSD.browse(ZEROCONF_NAME, new BrowseListener() {
+            service = DNSSD.browse(PeerDiscovery.ZEROCONF_NAME, new BrowseListener() {
 
                 @Override
                 public void operationFailed(DNSSDService arg0, int arg1) {
@@ -147,7 +144,7 @@ public class WindowsBonjour implements PeerInterface {
         }
 
         try {
-            reg = DNSSD.register(0, 0, "com.rhfung.P2PDictionary " + dict.getDescription(), ZEROCONF_NAME, null, null, dict.getLocalEndPoint().getPort(), record, new RegisterListener() {
+            reg = DNSSD.register(0, 0, "com.rhfung.P2PDictionary " + dict.getDescription(), PeerDiscovery.ZEROCONF_NAME, null, null, dict.getLocalEndPoint().getPort(), record, new RegisterListener() {
 
                 @Override
                 public void operationFailed(DNSSDService arg0, int arg1) {

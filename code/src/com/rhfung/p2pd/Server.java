@@ -1,5 +1,6 @@
 package com.rhfung.p2pd;
 import com.rhfung.P2PDictionary.P2PDictionary;
+import com.rhfung.P2PDictionary.peers.GenericBonjour;
 import com.rhfung.P2PDictionary.peers.NoDiscovery;
 import com.rhfung.P2PDictionary.peers.WindowsBonjour;
 import com.rhfung.logging.LogInstructions;
@@ -18,7 +19,7 @@ public class Server {
         options.addOption("p", true, "Bind to port default:8765");
         options.addOption("ns", "namespace", true, "Namespace for the server");
         options.addOption("t", "timespan", true, "Search interval for clients");
-        options.addOption("d", "discovery", true, "Backend discovery mechanism: none, win-bonjour");
+        options.addOption("d", "discovery", true, "Backend discovery mechanism: none, bonjour, win-bonjour. Default: bonjour");
         options.addOption("h", "help", true, "Show this help");
         options.addOption(Option.builder()
                 .longOpt("pattern")
@@ -84,11 +85,15 @@ public class Server {
                 builder.setPeerDiscovery(new NoDiscovery());
             } else if (cmd.getOptionValue("discovery").equals("win-bonjour")) {
                 builder.setPeerDiscovery(new WindowsBonjour());
+            } else if (cmd.getOptionValue("discovery").equals("bonjour")) {
+                builder.setPeerDiscovery(new GenericBonjour());
             } else {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp("p2pd", options);
                 return;
             }
+        } else {
+            builder.setPeerDiscovery(new GenericBonjour());
         }
 
         if (cmd.hasOption("clients")) {

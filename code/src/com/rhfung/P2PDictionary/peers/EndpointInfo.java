@@ -1,4 +1,4 @@
-package com.rhfung.P2PDictionary;
+package com.rhfung.P2PDictionary.peers;
 
 //P2PDictionary
 //Copyright (C) 2013, Richard H Fung (www.richardhfung.com)

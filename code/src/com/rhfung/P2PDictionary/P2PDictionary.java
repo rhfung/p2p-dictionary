@@ -304,16 +304,18 @@ import com.rhfung.logging.LogInstructions;
             {
                 try {
 					this.openServer(port);
+
+                    if (serverMode == P2PDictionaryServerMode.AutoRegister)
+                    {
+                        this.discovery.RegisterServer(this);
+                    }
 				} catch (NotSupportedException e) {
+                    WriteDebug("Unable to start server because of exception: " + e.getMessage());
 					callback.Disconnected(new ConnectionEventArgs(null, this._localUID));
 				} catch (IOException e) {
+                    WriteDebug("Unable to start server because of exception: " + e.getMessage());
 					callback.Disconnected(new ConnectionEventArgs(null, this._localUID));
 				}
-                
-                if (serverMode == P2PDictionaryServerMode.AutoRegister)
-                {
-                    this.discovery.RegisterServer(this);
-                }
             }
 
             if (clientMode == P2PDictionaryClientMode.AutoConnect)

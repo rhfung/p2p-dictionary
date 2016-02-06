@@ -33,4 +33,14 @@ public class EndpointInfo {
 		this.Address = addr;
 		this.Port = port;
 	}
+
+	public boolean equals(Object obj) {
+		if ( obj instanceof EndpointInfo){
+			EndpointInfo obj2 = (EndpointInfo)obj;
+			return this.UID == obj2.UID &&
+					this.Address.equals(obj2.Address) &&
+					this.Port == obj2.Port;
+		}
+		return false;
+	}
 }

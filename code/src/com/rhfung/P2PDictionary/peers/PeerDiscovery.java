@@ -22,6 +22,7 @@ package com.rhfung.P2PDictionary.peers;
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
+import com.rhfung.Interop.EndPoint;
 import com.rhfung.P2PDictionary.P2PDictionary;
 import com.rhfung.logging.LogInstructions;
 
@@ -52,6 +53,7 @@ public class PeerDiscovery {
 	public PeerDiscovery(LogInstructions debugBuffer, PeerInterface discovery) {
 		m_peerInterface = discovery;
 		m_log = debugBuffer;
+		m_peerInterface.ConfigureLogging(m_log);
 	}
 	
 	/**
@@ -89,4 +91,30 @@ public class PeerDiscovery {
 
 		 m_peerInterface.UnregisterServer();
 	 }
+
+	public static void updateEntry(int peerId, EndPoint newInfo) {
+
+		// update matched entry
+		if (getDiscoveredPeers().containsKey(peerId)) {
+			EndpointInfo infoEntry = new EndpointInfo(peerId, newInfo.getAddress(), newInfo.getPort());
+			EndpointList endpoints = getDiscoveredPeers().get(peerId);
+			if (!endpoints.contains(infoEntry)) {
+				endpoints.add(infoEntry);
+			}
+		}
+
+		// de-dup the IP address and port
+		for (Integer keyId : getDiscoveredPeers().keySet()) {
+			if (peerId != keyId) {
+				EndpointList list = getDiscoveredPeers().get(keyId);
+				for (int i = list.size(); i >= 0 && i < list.size(); i--) {
+					EndpointInfo info = list.get(i);
+					if (info.Address.equals(newInfo.getAddress()) &&
+							info.Port == newInfo.getPort()) {
+						list.remove(info);
+					}
+				}
+			}
+		}
+	}
 }

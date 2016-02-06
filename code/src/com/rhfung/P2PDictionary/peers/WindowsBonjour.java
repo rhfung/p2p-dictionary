@@ -2,6 +2,7 @@ package com.rhfung.P2PDictionary.peers;
 
 import com.apple.dnssd.*;
 import com.rhfung.P2PDictionary.P2PDictionary;
+import com.rhfung.logging.LogInstructions;
 
 import java.net.UnknownHostException;
 import java.util.Vector;
@@ -126,6 +127,11 @@ public class WindowsBonjour implements PeerInterface {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void ConfigureLogging(LogInstructions logger) {
+
     }
 
     /**

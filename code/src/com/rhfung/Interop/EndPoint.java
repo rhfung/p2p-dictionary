@@ -58,4 +58,14 @@ public class EndPoint {
 		// TODO Auto-generated method stub
 		return m_Address.getHostAddress() + ":" + m_Port;
 	}
+
+	public boolean equals(Object obj) {
+		if (obj instanceof EndPoint) {
+			EndPoint obj2 = (EndPoint) obj;
+			return obj2.m_Address.equals(this.m_Address) &&
+					obj2.m_Port == this.m_Port;
+		} else {
+			return false;
+		}
+	}
 }

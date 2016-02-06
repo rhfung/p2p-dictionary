@@ -1,6 +1,8 @@
 package com.rhfung.P2PDictionary.peers;
 
 import com.rhfung.P2PDictionary.P2PDictionary;
+import com.rhfung.logging.LogInstructions;
+
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
@@ -26,6 +28,11 @@ public class GenericBonjour implements PeerInterface, ServiceListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void ConfigureLogging(LogInstructions logger) {
+
     }
 
     @Override

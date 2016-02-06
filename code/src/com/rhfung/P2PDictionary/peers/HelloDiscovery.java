@@ -43,7 +43,9 @@ public class HelloDiscovery implements PeerInterface {
                         dict.getNamespace());
 
                 if (payload == null) {
-                    m_logger.Log(LogInstructions.WARN, "Cannot prepare a payload for broadcasting", true);
+                    if (m_logger != null) {
+                        m_logger.Log(LogInstructions.WARN, "Cannot prepare a payload for broadcasting", true);
+                    }
                     return;
                 }
 
@@ -54,19 +56,25 @@ public class HelloDiscovery implements PeerInterface {
                     dgram = new DatagramPacket(b, b.length,
                             InetAddress.getByName(MCAST_ADDR), DEST_PORT);
                 } catch (UnknownHostException e) {
-                    m_logger.Log(LogInstructions.WARN, "Cannot bind a broadcast port", true);
+                    if (m_logger != null) {
+                        m_logger.Log(LogInstructions.WARN, "Cannot bind a broadcast port", true);
+                    }
                     e.printStackTrace();
                     return;
                 }
 
-                m_logger.Log(LogInstructions.INFO, "Sending " + b.length + " bytes to " +
-                        dgram.getAddress() + ':' + dgram.getPort(), true);
+                if (m_logger != null) {
+                    m_logger.Log(LogInstructions.INFO, "Sending " + b.length + " bytes to " +
+                            dgram.getAddress() + ':' + dgram.getPort(), true);
+                }
 
                 DatagramSocket socket = null;
                 try {
                     socket = new DatagramSocket();
                 } catch (SocketException e) {
-                    m_logger.Log(LogInstructions.WARN, "Cannot create a datagram socket", true);
+                    if (m_logger != null) {
+                        m_logger.Log(LogInstructions.WARN, "Cannot create a datagram socket", true);
+                    }
                     return;
                 }
                 try {
@@ -115,14 +123,18 @@ public class HelloDiscovery implements PeerInterface {
         try {
             socket = new MulticastSocket(DEST_PORT);
         } catch (IOException e) {
-            m_logger.Log(LogInstructions.WARN, "Cannot enable service listening", true);
+            if (m_logger != null) {
+                m_logger.Log(LogInstructions.WARN, "Cannot enable service listening", true);
+            }
             e.printStackTrace();
             return;
         }
         try {
             socket.joinGroup(InetAddress.getByName(MCAST_ADDR));
         } catch (IOException e) {
-            m_logger.Log(LogInstructions.WARN, "Cannot join to multicast", true);
+            if (m_logger != null) {
+                m_logger.Log(LogInstructions.WARN, "Cannot join to multicast", true);
+            }
             e.printStackTrace();
             socket.close();
             socket = null;
@@ -135,7 +147,9 @@ public class HelloDiscovery implements PeerInterface {
                 byte[] b = new byte[BUFFER_LENGTH];
                 DatagramPacket dgram = new DatagramPacket(b, b.length);
 
-                m_logger.Log(LogInstructions.INFO, "Waiting to receive messages", true);
+                if (m_logger != null) {
+                    m_logger.Log(LogInstructions.INFO, "Waiting to receive messages", true);
+                }
 
                 while (socket != null) {
                     try {
@@ -145,8 +159,10 @@ public class HelloDiscovery implements PeerInterface {
                     } catch (IOException e) {
                         break;
                     }
-                    m_logger.Log(LogInstructions.DEBUG, "Received " + dgram.getLength() +
-                            " bytes from " + dgram.getAddress(), true);
+                    if (m_logger != null) {
+                        m_logger.Log(LogInstructions.DEBUG, "Received " + dgram.getLength() +
+                                " bytes from " + dgram.getAddress(), true);
+                    }
 
                     Payload message = new Payload(dgram.getData());
                     parsePayload(dgram.getAddress(), message);
@@ -171,10 +187,14 @@ public class HelloDiscovery implements PeerInterface {
 
                 EndpointList list = PeerDiscovery.getDiscoveredPeers().get(identifier);
                 if (!list.containsAddress(address)) {
-                    m_logger.Log(LogInstructions.INFO, "Discovered a new peer UID " + identifier + " at " + address + ":" + message.getPort(), true);
+                    if (m_logger != null) {
+                        m_logger.Log(LogInstructions.INFO, "Discovered a new peer UID " + identifier + " at " + address + ":" + message.getPort(), true);
+                    }
                     list.add(new EndpointInfo(identifier, address, message.getPort()));
                 } else {
-                    m_logger.Log(LogInstructions.INFO, "Peer " + identifier + " is still there", true);
+                    if (m_logger != null) {
+                        m_logger.Log(LogInstructions.INFO, "Peer " + identifier + " is still there", true);
+                    }
                 }
 
             }

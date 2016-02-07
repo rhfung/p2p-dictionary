@@ -169,13 +169,17 @@ public class Server {
             String[] clientList = cmd.getOptionValues("nodes");
             for (String client: clientList) {
                 String parts[] = client.split(":", 2);
-                try {
-                    InetAddress address = InetAddress.getByName(parts[0]);
-                    int port = Integer.parseInt(parts[1]);
-                    System.out.println("Connecting to " + client);
-                    dict.openClient(address, port);
-                } catch (UnknownHostException exception) {
-                    System.out.println("Cannot connect to " + client);
+                if (parts.length == 2) {
+                    try {
+                        InetAddress address = InetAddress.getByName(parts[0]);
+                        int port = Integer.parseInt(parts[1]);
+                        System.out.println("Connecting to " + client);
+                        dict.openClient(address, port);
+                    } catch (UnknownHostException exception) {
+                        System.out.println("Cannot connect to " + client);
+                    }
+                } else {
+                    System.out.println("Specify port to connect to " + client);
                 }
             }
         }

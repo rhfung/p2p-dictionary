@@ -15,10 +15,10 @@ import java.util.logging.Level;
 public class HelloDiscovery implements PeerInterface {
     final int BUFFER_LENGTH = 255;
     final int DEST_PORT = 7272;
-    final String MCAST_ADDR = "239.8.8.0";
+    final String MCAST_ADDR = "255.255.255.255";
     final String MCAST_ADDR_V6 = "ff05::1:3";
 
-    MulticastSocket socket; // must bind receive side
+    DatagramSocket socket; // must bind receive side
     Thread transmit;
     Thread receive;
 
@@ -71,6 +71,7 @@ public class HelloDiscovery implements PeerInterface {
                 DatagramSocket socket = null;
                 try {
                     socket = new DatagramSocket();
+                    socket.setBroadcast(true);
                 } catch (SocketException e) {
                     if (m_logger != null) {
                         m_logger.Log(LogInstructions.WARN, "Cannot create a datagram socket", true);
@@ -121,23 +122,13 @@ public class HelloDiscovery implements PeerInterface {
     public void BrowseServices() {
 
         try {
-            socket = new MulticastSocket(DEST_PORT);
+            socket = new DatagramSocket(DEST_PORT, InetAddress.getByName("0.0.0.0"));
+            socket.setBroadcast(true);
         } catch (IOException e) {
             if (m_logger != null) {
                 m_logger.Log(LogInstructions.WARN, "Cannot enable service listening", true);
             }
             e.printStackTrace();
-            return;
-        }
-        try {
-            socket.joinGroup(InetAddress.getByName(MCAST_ADDR));
-        } catch (IOException e) {
-            if (m_logger != null) {
-                m_logger.Log(LogInstructions.WARN, "Cannot join to multicast", true);
-            }
-            e.printStackTrace();
-            socket.close();
-            socket = null;
             return;
         }
 

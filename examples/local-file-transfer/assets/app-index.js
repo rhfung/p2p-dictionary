@@ -89,8 +89,9 @@ $(document).ready( function() {
 		},
 		updateOneItem: function(data) {
 			var file = this.fileFromJSON(data);
-			if (!_.any(this.collection.models, function (test) { return file.get("name") == test.get("name"); } ))
+			if (!_.any(this.collection.models, function (test) { return file.get("name") == test.get("name"); } )) {
 				this.collection.add(file );
+			}
 			// else do some refresh??
 		},
 		upload: function(file) {
@@ -108,7 +109,7 @@ $(document).ready( function() {
 			$('#progressNumber').show();
 
 			var fd = new FormData();
-			fd.append("fileToUpload", file);
+			fd.append(file.name, file);
 
 			jQuery.ajax({
 				data:fd,
@@ -137,7 +138,12 @@ $(document).ready( function() {
 				},
 				success: function (data, textStatus, jqXHR) {
 					EventBus.trigger("clearUpload");
-					EventBus.trigger("addmodel", data);
+					if (data.keys) {
+					    var entry = data.keys.find(function(el) {
+					        return el.key === "/data/lft/" + file.name;
+					    });
+					    EventBus.trigger("addmodel", entry);
+					}
 					$('#progressNumber').hide();
 					$("#upload").hide();
 				},

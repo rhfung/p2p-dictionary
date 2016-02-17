@@ -1510,9 +1510,9 @@ import com.rhfung.logging.LogInstructions;
 
             // raise events as necessary
             SubscriptionEventArgs args = new SubscriptionEventArgs();
-            args.SubscripitonPattern = wildcardString;
-            args.Reason = SubscriptionEventReason.Add;
-            args.Initiator = initiator;
+            args.setSubscriptionPattern(wildcardString);
+            args.setReason(SubscriptionEventReason.Add);
+            args.setInitiator(initiator);
             callback.SubscriptionChanged(args);
         }
 
@@ -1536,8 +1536,8 @@ import com.rhfung.logging.LogInstructions;
 
             // raise events as necessary
             SubscriptionEventArgs args = new SubscriptionEventArgs();
-            args.SubscripitonPattern = wildcardString;
-            args.Reason = SubscriptionEventReason.Remove;
+            args.setSubscriptionPattern(wildcardString);
+            args.setReason(SubscriptionEventReason.Remove);
             callback.SubscriptionChanged(args);
             
         }
@@ -1771,8 +1771,8 @@ import com.rhfung.logging.LogInstructions;
                 try
                 {
                     SubscriptionEventArgs newarg = new SubscriptionEventArgs();
-                    newarg.SubscripitonPattern = args.SubscripitonPattern;
-                    newarg.Reason = args.Reason;
+                    newarg.setSubscriptionPattern(args.getSubscriptionPattern());
+                    newarg.setReason(args.getReason());
                     callback.SubscriptionChanged(newarg);
                 }
                 catch (Exception ex)

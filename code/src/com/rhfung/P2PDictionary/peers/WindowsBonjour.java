@@ -5,7 +5,6 @@ import com.rhfung.P2PDictionary.P2PDictionary;
 import com.rhfung.logging.LogInstructions;
 
 import java.net.UnknownHostException;
-import java.util.Vector;
 
 /**
  * Discover peers using Apple Bonjour on Windows.
@@ -37,20 +36,20 @@ public class WindowsBonjour implements PeerInterface {
             {
                 String uid = txtRecord.getValueAsString("uid");
                 int uidInt = Integer.parseInt(uid);
-                synchronized (PeerDiscovery.getDiscoveredPeers()) {
+                synchronized (PeerManager.getDiscoveredPeers()) {
 
 
-                    if (!PeerDiscovery.getDiscoveredPeers().containsKey(uidInt))
+                    if (!PeerManager.getDiscoveredPeers().containsKey(uidInt))
                     {
-                        PeerDiscovery.getDiscoveredPeers().put(uidInt, new EndpointList());
+                        PeerManager.getDiscoveredPeers().put(uidInt, new EndpointList());
                     }
                 }
 
                 try {
-                    synchronized (PeerDiscovery.getDiscoveredPeers().get(uidInt)) {
-                        if (PeerDiscovery.getDiscoveredPeers().get(uidInt).size() < 10)
+                    synchronized (PeerManager.getDiscoveredPeers().get(uidInt)) {
+                        if (PeerManager.getDiscoveredPeers().get(uidInt).size() < 10)
                         {
-                            PeerDiscovery.getDiscoveredPeers().get(uidInt).add(new EndpointInfo(uidInt, java.net.InetAddress.getByName(hostName), post ));
+                            PeerManager.getDiscoveredPeers().get(uidInt).add(new EndpointInfo(uidInt, java.net.InetAddress.getByName(hostName), post ));
                         }
                     }
                 } catch (UnknownHostException e) {
@@ -82,7 +81,7 @@ public class WindowsBonjour implements PeerInterface {
             service.stop();
 
         try {
-            service = DNSSD.browse(PeerDiscovery.ZEROCONF_NAME, new BrowseListener() {
+            service = DNSSD.browse(PeerManager.ZEROCONF_NAME, new BrowseListener() {
 
                 @Override
                 public void operationFailed(DNSSDService arg0, int arg1) {
@@ -150,7 +149,7 @@ public class WindowsBonjour implements PeerInterface {
         }
 
         try {
-            reg = DNSSD.register(0, 0, "com.rhfung.P2PDictionary " + dict.getDescription(), PeerDiscovery.ZEROCONF_NAME, null, null, dict.getLocalEndPoint().getPort(), record, new RegisterListener() {
+            reg = DNSSD.register(0, 0, "com.rhfung.P2PDictionary " + dict.getDescription(), PeerManager.ZEROCONF_NAME, null, null, dict.getLocalEndPoint().getPort(), record, new RegisterListener() {
 
                 @Override
                 public void operationFailed(DNSSDService arg0, int arg1) {

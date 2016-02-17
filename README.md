@@ -35,8 +35,7 @@ Basic requirements
 Documentation
 -------------
 
-This library needs a lot more documentation. I have written documentation for parts of P2P Dictionary
-in the `doc` directory.
+This library needs a lot of documentation.
 
 Examples
 --------
@@ -74,7 +73,7 @@ See other sample projects in `examples`
 Running Locally
 ---------------
 
-If you have Java 1.7 already installed in your system path, you can run using:
+If you have Java 1.7 already installed in your system path, you can run this program using:
 
     ./start [parameters]
 
@@ -89,6 +88,13 @@ To run this project locally, run the following commands from your Docker termina
 
 And then visit the URL ```http://docker_url:8765``` where `docker_url` is `localhost` (linux)
 or the docker machine URL (mac)
+
+The Docker-related configuration files are:
+
+* start_docker
+* .dockerignore
+* Dockerfile
+* docker/dockerstart
 
 P2PD Parameters
 ---------------
@@ -112,12 +118,6 @@ Parameters:
                               placeholders; default to *
      -t,--timespan <arg>      Search interval for clients
 
-The Docker-related configuration files are:
-
-* start_docker
-* .dockerignore
-* Dockerfile
-* docker/dockerstart
 
 Related Projects
 ----------------
@@ -125,6 +125,14 @@ Related Projects
 I forked this project from a graduate-level course on peer to peer networking.
 I moved the original implementation, written in C# for the .NET platform,
 into [another repository](https://github.com/rhfung/p2p-dictionary-csharp).
+
+Known Issues
+------------
+
+Issues in 3.1:
+
+* Duplicate connections aren't closed automatically
+* win-bonjour discovery module doesn't start correctly
 
 Distribution
 ----------------

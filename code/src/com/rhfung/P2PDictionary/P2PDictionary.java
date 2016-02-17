@@ -48,7 +48,7 @@ import com.rhfung.P2PDictionary.callback.DefaultCallback;
 import com.rhfung.P2PDictionary.callback.IDictionaryCallback;
 import com.rhfung.P2PDictionary.peers.EndpointInfo;
 import com.rhfung.P2PDictionary.peers.NoDiscovery;
-import com.rhfung.P2PDictionary.peers.PeerDiscovery;
+import com.rhfung.P2PDictionary.peers.PeerManager;
 import com.rhfung.P2PDictionary.peers.PeerInterface;
 import com.rhfung.P2PDictionary.subscription.*;
 import com.rhfung.logging.LogInstructions;
@@ -87,7 +87,7 @@ import com.rhfung.logging.LogInstructions;
 
         List<DataConnection> connections;
         Subscription subscription;
-        PeerDiscovery discovery;
+        PeerManager discovery;
 
         int constructNwNextPeer=0;
         int constructNwRandomPeer=0;
@@ -294,7 +294,7 @@ import com.rhfung.logging.LogInstructions;
                 this.debugBuffer = null;
             }
 
-            this.discovery = new PeerDiscovery(this.debugBuffer, discovery);
+            this.discovery = new PeerManager(this.debugBuffer, discovery);
 
             // sender threads
             ConstructSenderThreads();
@@ -1574,9 +1574,9 @@ import com.rhfung.logging.LogInstructions;
             WriteDebug("Looking for peers");
 
             ListInt keys ;
-            synchronized (PeerDiscovery.getDiscoveredPeers())
+            synchronized (PeerManager.getDiscoveredPeers())
             {
-                keys = new ListInt(PeerDiscovery.getDiscoveredPeers().keys());
+                keys = new ListInt(PeerManager.getDiscoveredPeers().keys());
             }
 
             keys.remove(getLocalID());
@@ -1621,9 +1621,9 @@ import com.rhfung.logging.LogInstructions;
                     }
                 }
                 List<EndpointInfo> nextConnInfo;
-                synchronized (PeerDiscovery.getDiscoveredPeers())
+                synchronized (PeerManager.getDiscoveredPeers())
                 {
-                    nextConnInfo = PeerDiscovery.getDiscoveredPeers().get(nextUID);
+                    nextConnInfo = PeerManager.getDiscoveredPeers().get(nextUID);
                 }
                 synchronized (nextConnInfo)
                 {
@@ -1647,9 +1647,9 @@ import com.rhfung.logging.LogInstructions;
                 }
 
                 List<EndpointInfo> nextConnInfo;
-                synchronized (PeerDiscovery.getDiscoveredPeers())
+                synchronized (PeerManager.getDiscoveredPeers())
                 {
-                    nextConnInfo = PeerDiscovery.getDiscoveredPeers().get(keys.get(pickNum));
+                    nextConnInfo = PeerManager.getDiscoveredPeers().get(keys.get(pickNum));
                 }
                 synchronized (nextConnInfo)
                 {
@@ -1867,8 +1867,8 @@ import com.rhfung.logging.LogInstructions;
         {
             if (discovery != null)
             {
-                List<EndpointInfo> list = new Vector<EndpointInfo>(PeerDiscovery.getDiscoveredPeers().size());
-                for(List<EndpointInfo> l : PeerDiscovery.getDiscoveredPeers().values())
+                List<EndpointInfo> list = new Vector<EndpointInfo>(PeerManager.getDiscoveredPeers().size());
+                for(List<EndpointInfo> l : PeerManager.getDiscoveredPeers().values())
                 {
                     for(EndpointInfo m : l)
                     {

@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
 
 /**
  * Created by richard on 2/4/16.
@@ -172,11 +171,11 @@ public class HelloDiscovery implements PeerInterface {
         if (message.isHeaderSet()) {
             int identifier = message.getIdentifier();
             if (identifier != 0 && message.getPort() != 0) {
-                if (!PeerDiscovery.getDiscoveredPeers().containsKey(identifier)) {
-                    PeerDiscovery.getDiscoveredPeers().put(identifier, new EndpointList());
+                if (!PeerManager.getDiscoveredPeers().containsKey(identifier)) {
+                    PeerManager.getDiscoveredPeers().put(identifier, new EndpointList());
                 }
 
-                EndpointList list = PeerDiscovery.getDiscoveredPeers().get(identifier);
+                EndpointList list = PeerManager.getDiscoveredPeers().get(identifier);
                 if (!list.containsAddress(address)) {
                     if (m_logger != null) {
                         m_logger.Log(LogInstructions.INFO, "Discovered a new peer UID " + identifier + " at " + address + ":" + message.getPort(), true);

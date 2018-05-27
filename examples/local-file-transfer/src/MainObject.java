@@ -10,7 +10,7 @@ import com.rhfung.P2PDictionary.P2PDictionary;
 public class MainObject {
 	public static final void main(String[] args)
 	{
-		System.out.println("Starting server on port 8765...");
+		System.out.println("Starting server on port 8800...");
 		
 		final P2PDictionary dict = P2PDictionary.builder()
 			.setDescription("Local File Transfer")
@@ -18,8 +18,10 @@ public class MainObject {
 			.setNamespace("lft")
 			.setClientSearchTimespan(1500)
 			.build();
-		
-		dict.setDebugBuffer(System.out, 1, true);
+
+		// Uncomment the following line to debug:
+		// dict.setDebugBuffer(System.out, 1, true);
+
 		dict.addSubscription("*");
 		dict.setDefaultKey("index.html");
 		dict.put("index.html", new com.rhfung.P2PDictionary.MIMEByteObject("text/html", getFileInPackage("/app-index.html")));
@@ -28,13 +30,6 @@ public class MainObject {
 		dict.put("format.css", new com.rhfung.P2PDictionary.MIMEByteObject("text/css", getFileInPackage("/format.css")));
 		dict.put("underscore.js", new com.rhfung.P2PDictionary.MIMEByteObject("application/javascript", getFileInPackage("/underscore.js")));
 		dict.put("jquery-1.7.2.js", new com.rhfung.P2PDictionary.MIMEByteObject("application/javascript", getFileInPackage("/jquery-1.7.2.js")));
-
-		// make it interesting by connecting to another client
-//		try {
-//			dict.openClient(InetAddress.getByName("localhost"), 8765);
-//		} catch(Exception ex) {
-//
-//		}
 
 		Thread shutdown = new Thread(new Runnable() {
 			@Override

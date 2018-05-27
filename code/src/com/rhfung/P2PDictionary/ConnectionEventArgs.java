@@ -23,12 +23,28 @@ package com.rhfung.P2PDictionary;
 //THE SOFTWARE.
 
 public class ConnectionEventArgs {
-	  public com.rhfung.Interop.EndPoint EndPoint;
-      public int RemoteUID;
+	  private com.rhfung.Interop.EndPoint EndPoint;
+      private int RemoteUID;
       
       ConnectionEventArgs(com.rhfung.Interop.EndPoint ep, int remoteUID)
       {
-    	  this.EndPoint = ep;
-    	  this.RemoteUID = remoteUID;
+    	  this.setEndPoint(ep);
+    	  this.setRemoteUID(remoteUID);
       }
+
+    public com.rhfung.Interop.EndPoint getEndPoint() {
+        return this.EndPoint;
+    }
+
+    public void setEndPoint(com.rhfung.Interop.EndPoint endPoint) {
+        this.EndPoint = endPoint;
+    }
+
+    public int getRemoteUID() {
+        return this.RemoteUID;
+    }
+
+    public void setRemoteUID(int remoteUID) {
+        this.RemoteUID = remoteUID;
+    }
 }

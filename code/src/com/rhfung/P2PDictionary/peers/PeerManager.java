@@ -35,7 +35,7 @@ import java.util.List;
  * @author Richard
  *
  */
-public class PeerDiscovery {
+public class PeerManager {
 	public static final String ZEROCONF_NAME = "_com-rhfung-peer._tcp.local.";
 
 	private static Hashtable<Integer, EndpointList> m_discoveredPeers;
@@ -50,7 +50,7 @@ public class PeerDiscovery {
 
 	private PeerInterface m_peerInterface = null;
 
-	public PeerDiscovery(LogInstructions debugBuffer, PeerInterface discovery) {
+	public PeerManager(LogInstructions debugBuffer, PeerInterface discovery) {
 		m_peerInterface = discovery;
 		m_log = debugBuffer;
 		m_peerInterface.ConfigureLogging(m_log);

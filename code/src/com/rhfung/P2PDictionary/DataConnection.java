@@ -43,7 +43,7 @@ import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import com.rhfung.P2PDictionary.peers.EndpointInfo;
-import com.rhfung.P2PDictionary.peers.PeerDiscovery;
+import com.rhfung.P2PDictionary.peers.PeerManager;
 import com.rhfung.P2PDictionary.subscription.Subscription;
 import com.rhfung.logging.LogInstructions;
 import org.apache.commons.codec.binary.Base64;
@@ -681,7 +681,7 @@ class DataConnection
                         } else {
                             WriteDebug("Detected a duplicate connection, waiting for " + remoteID + " to close");
                         }
-                        PeerDiscovery.updateEntry(remoteID, this.getRemoteEndPoint());
+                        PeerManager.updateEntry(remoteID, this.getRemoteEndPoint());
                     }
 	                else
 	                {

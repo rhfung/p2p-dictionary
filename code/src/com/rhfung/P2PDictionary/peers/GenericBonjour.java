@@ -8,11 +8,8 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Vector;
 
 /**
  * Created by richard on 2/3/16.
@@ -45,7 +42,7 @@ public class GenericBonjour implements PeerInterface, ServiceListener {
         }
 
         try {
-            m_instance.registerService(ServiceInfo.create(PeerDiscovery.ZEROCONF_NAME,
+            m_instance.registerService(ServiceInfo.create(PeerManager.ZEROCONF_NAME,
                     dict.getDescription(),
                     dict.getLocalEndPoint().getPort(),
                     1, 1,
@@ -61,7 +58,7 @@ public class GenericBonjour implements PeerInterface, ServiceListener {
         if (m_instance != null) {
             m_instance.unregisterAllServices();
             if (m_isBrowsing) {
-                m_instance.removeServiceListener(PeerDiscovery.ZEROCONF_NAME, this);
+                m_instance.removeServiceListener(PeerManager.ZEROCONF_NAME, this);
                 m_isBrowsing = false;
             }
             try {
@@ -79,7 +76,7 @@ public class GenericBonjour implements PeerInterface, ServiceListener {
         if (m_instance == null)  {
             return;
         }
-        m_instance.addServiceListener(PeerDiscovery.ZEROCONF_NAME, this);
+        m_instance.addServiceListener(PeerManager.ZEROCONF_NAME, this);
         m_isBrowsing = true;
         }
 
@@ -88,10 +85,10 @@ public class GenericBonjour implements PeerInterface, ServiceListener {
 
         String uid = serviceEvent.getInfo().getPropertyString("uid");
         if (canParse(uid)) {
-            if (!PeerDiscovery.getDiscoveredPeers().containsKey(getKeyForUID(uid))) {
-                PeerDiscovery.getDiscoveredPeers().put(getKeyForUID(uid), new EndpointList());
+            if (!PeerManager.getDiscoveredPeers().containsKey(getKeyForUID(uid))) {
+                PeerManager.getDiscoveredPeers().put(getKeyForUID(uid), new EndpointList());
             }
-            EndpointList endpoints = PeerDiscovery.getDiscoveredPeers().get(getKeyForUID(uid));
+            EndpointList endpoints = PeerManager.getDiscoveredPeers().get(getKeyForUID(uid));
             InetAddress[] addresses = serviceEvent.getInfo().getInetAddresses();
             for (InetAddress address : addresses) {
                 if (!endpoints.containsAddress(address)) {
@@ -106,7 +103,7 @@ public class GenericBonjour implements PeerInterface, ServiceListener {
 
         String uid = serviceEvent.getInfo().getPropertyString("uid");
         if (canParse(uid)) {
-            EndpointList endpoints = PeerDiscovery.getDiscoveredPeers().get(getKeyForUID(uid));
+            EndpointList endpoints = PeerManager.getDiscoveredPeers().get(getKeyForUID(uid));
             if (endpoints != null) {
                 InetAddress[] addresses = serviceEvent.getInfo().getInetAddresses();
                 for (InetAddress address : addresses) {

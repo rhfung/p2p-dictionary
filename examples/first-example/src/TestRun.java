@@ -1,19 +1,20 @@
-import java.io.PrintStream;
 import java.util.Scanner;
 
 import com.rhfung.P2PDictionary.*;
+import com.rhfung.P2PDictionary.callback.IDictionaryCallback;
+import com.rhfung.P2PDictionary.subscription.SubscriptionEventArgs;
 import com.rhfung.P2PDictionary.subscription.SubscriptionException;
-import com.rhfung.logging.LogInstructions;
 
 
-public class TestRun {
+public class TestRun extends IDictionaryCallback {
 
     /**
      * @param args
      */
     public static void main(String[] args) {
         System.out.println("Server started on port 3333");
-        System.out.println("Open your web browser to http://localhost:3333 and verify that dictionary entries\nare properly served from the P2P Dictionary server");
+        System.out.println("Open your web browser to http://localhost:3333 and verify that dictionary entries" +
+                "\nare properly served from the P2P Dictionary server");
 
         P2PDictionary node = P2PDictionary.builder()
                 .setDescription("test")
@@ -22,8 +23,13 @@ public class TestRun {
                 .setServerMode(P2PDictionaryServerMode.AutoRegister)
                 .setClientMode(P2PDictionaryClientMode.AutoConnect)
                 .setClientSearchTimespan(1500)
-                .setLogLevel(System.out, LogInstructions.DEBUG)
+                .setCallback(new TestRun())
                 .build();
+
+        /*
+         * The dictionary's keys are programmatically assigned using get/set operations,
+         * similar to a regular dictionary.
+         */
 
         node.put("message1", "hello world");
         node.put("message2", 2.3);
@@ -45,16 +51,30 @@ public class TestRun {
         toSend.setHidden("hiddenvalue");
         node.put("message8", toSend);
 
-        System.out.print("Press any key to show saved values...");
+        /*
+         * Some waiting event to keep the server open for demonstration only.
+         */
+
+        System.out.print("Press Enter to show saved values...");
 
         Scanner sc = new Scanner(System.in);
         sc.nextLine();
+
+        /*
+         * Reading from the dictionary is straightforward.
+         */
 
         try {
             System.out.println("message1 is " + node.get("message1"));
             System.out.println("message2 is " + node.get("message2"));
             System.out.println("message3 is " + node.get("message3"));
-            System.out.println("message4 is " + node.get("message4"));
+            byte[] msg4 = (byte[]) node.get("message4");
+            System.out.print("message4 is [");
+            for (byte b: msg4) {
+                System.out.print(b);
+                System.out.print(" ");
+            }
+            System.out.println("]");
             System.out.println("message5 is " + node.get("message5"));
             System.out.println("message6 is " + node.get("message6"));
             System.out.println("message7 is " + node.get("message7"));
@@ -68,4 +88,32 @@ public class TestRun {
         System.out.println("goodbye");
     }
 
+    /*
+     * The dictionary can act in pub-sub mode. Here are the subscription events.
+     */
+
+    @Override
+    public void SubscriptionChanged(SubscriptionEventArgs e) {
+        System.out.println("Subscription " + e.getReason() + " " + e.getSubscriptionPattern());
+    }
+
+    @Override
+    public void Notification(NotificationEventArgs e) {
+        System.out.println("Notification " +  e.getReason()  + " key=" + e.getKey() );
+    }
+
+    @Override
+    public void Connected(ConnectionEventArgs e) {
+        System.out.println("Connected");
+    }
+
+    @Override
+    public void Disconnected(ConnectionEventArgs e) {
+        System.out.println("Disconnected");
+    }
+
+    @Override
+    public void ConnectionFailure(ConnectionEventArgs e) {
+        System.out.println("Connection Failure");
+    }
 }

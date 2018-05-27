@@ -101,16 +101,16 @@ Parameters:
         --fulldebug           Enable debugging mode
      -h,--help <arg>          Show this help
      -m,--description <arg>   Description for the server
-     -n,--nodes <host:port>   Provide clients in the form
+     -n,--node <host:port>    Provide clients in the form
                               hostname:port,hostname:port,... (separated by
                               commas)
         --nopattern           Monitors no patterns
-     -ns,--namespace <arg>    Namespace for the server
-     -p <arg>                 Bind to port default:8765
+     -s,--namespace <arg>     Namespace for the server
+     -p, --port <arg>         Bind to port default:8765
         --pattern <arg>       Monitors a specific pattern using wildcard (*),
                               single character (?), and number (#)
                               placeholders; default to *
-     -t,--timespan <arg>      Search interval for clients
+     -t,--timespan <arg>      Search interval for clients in milliseconds
 
 The Docker-related configuration files are:
 

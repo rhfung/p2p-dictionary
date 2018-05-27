@@ -40,9 +40,9 @@ public class Server {
     public static void main(String[] args) {
         Options options = new Options();
         options.addOption("m", "description", true, "Description for the server");
-        options.addOption("p", true, "Bind to port default:8765");
-        options.addOption("ns", "namespace", true, "Namespace for the server");
-        options.addOption("t", "timespan", true, "Search interval for clients");
+        options.addOption("p", "port", true, "Bind to port default:8765");
+        options.addOption("s", "namespace", true, "Namespace for the server");
+        options.addOption("t", "timespan", true, "Search interval for clients in milliseconds");
         options.addOption("d", "discovery", true, "Backend discovery mechanism: none, bonjour, win-bonjour, hello. Default: hello");
         options.addOption("h", "help", true, "Show this help");
         options.addOption(Option.builder()
@@ -63,7 +63,7 @@ public class Server {
                 .desc("Enable debugging mode")
                 .build());
         options.addOption(Option.builder("n")
-                .longOpt("nodes")
+                .longOpt("node")
                 .argName("host:port")
                 .desc("Provide clients in the form hostname:port,hostname:port,... (separated by commas)")
                 .hasArgs()
@@ -92,8 +92,8 @@ public class Server {
             builder.setDescription(cmd.getOptionValue("description"));
         }
 
-        if (cmd.hasOption("p")) {
-            builder.setPort(Integer.parseInt(cmd.getOptionValue("p")));
+        if (cmd.hasOption("port")) {
+            builder.setPort(Integer.parseInt(cmd.getOptionValue("port")));
         }
 
         if (cmd.hasOption("namespace")) {
@@ -165,8 +165,8 @@ public class Server {
 
         System.out.println("Started server");
 
-        if (cmd.hasOption("nodes")) {
-            String[] clientList = cmd.getOptionValues("nodes");
+        if (cmd.hasOption("node")) {
+            String[] clientList = cmd.getOptionValues("node");
             for (String client: clientList) {
                 String parts[] = client.split(":", 2);
                 if (parts.length == 2) {

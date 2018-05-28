@@ -1,12 +1,26 @@
 P2P Dictionary
 ==============
 
-P2P Dictionary is a distributed key-value store for multiple computers on a local area network.
-Each computer runs a P2P server, which replicates a subset of stored dictionary entries (key-value pairs).
-Each computer chooses a subset of keys to subscribe to. This dictionary provides an API written for .NET
-and Java applications. A REST interface is provided by the P2P server for read-only access to dictionary entries.
-A local area network is defined by Apple Bonjour's local service discovery. Similar to other NoSQL implementations,
-it does not provide an SQL interface or guarantee ACID (atomicity, consistency, isolation, durability).
+P2P Dictionary is a distributed key-value store for multiple nodes
+on a local area network. Each node will subscribe to 
+a subset of key-value pairs. Key-value pairs are replicated as necessary
+between nodes to reach to another node. Similar to most 
+NoSQL implementations, it does not provide an SQL interface or
+guarantee ACID (atomicity, consistency, isolation, durability).
+
+P2P dictionary will run on a local area network discovered using 
+LAN discovery technologies (e.g., Apple Bonjour, Zeroconf, UDP broadcast)
+or any reachable IP address in a public network. Peer links can be discovered
+or connected by the client.
+
+P2P dictionary provides a server written in 
+[.NET Framework](https://github.com/rhfung/p2p-dictionary-csharp), 
+[.NET Core](https://github.com/rhfung/p2p-dictionary-csharp),
+and [Java JVM](https://github.com/rhfung/p2p-dictionary). 
+A REST interface is provided by the P2P server for read-only access
+to key-value pairs. A web interface is provided for web browser access 
+to key-value pairs stored on each node. A redistributable package is provided
+using Docker containers with both .NET and Java implementations.
 
 Copyright (C) 2011-2016, Richard H Fung
 
@@ -18,7 +32,7 @@ You agree to the LICENSE before using this Software.
 Basic requirements
 ------------------
 
-* Java SE 1.7 or higher OR Docker
+* Java SE 8 or higher OR Docker
 
 * For Bonjour discovery on Windows:
   * Apple Bonjour Print Services for Windows: http://support.apple.com/kb/DL999
@@ -70,15 +84,6 @@ Taken from examples/first-example/TestRun.java:
 
 See other sample projects in `examples`
 
-Running Locally
----------------
-
-If you have Java 1.7 already installed in your system path, you can run this program using:
-
-    ./start [parameters]
-
-By default it runs on ```http://localhost:8765```.
-
 Running in Docker
 -----------------
 
@@ -95,6 +100,15 @@ The Docker-related configuration files are:
 * .dockerignore
 * Dockerfile
 * docker/dockerstart
+
+Running Locally
+---------------
+
+If you have Java 1.7 already installed in your system path, you can run this program using:
+
+    ./start [parameters]
+
+By default it runs on ```http://localhost:8765```.
 
 P2PD Parameters
 ---------------
@@ -139,10 +153,17 @@ Distribution
 
 See the `dist` directory. The distribution also requires `lib` jars.
 
-### Change Log
+Change Log
+----------
 
-* 3.1: added in a new discovery service
-* 3.0: added in daemon and web client query support
-* 2.0.x: REST-compliant API, Bonjour registration, support for any MIME type, and stability bug fixes.
-         Not compatible with 1.6.3. Cross-platform.
+* 3.2:
+  * Update requirement to Java 8
+  * Changed CLI arguments to match .NET implementation
+* 3.1: added in a new discovery service `hello`
+* 3.0: added in CLI and web client query support
+* 2.0: 
+  * REST-compliant API
+  * Bonjour registration
+  * support for any MIME type
+  * not compatible with 1.6.3
 * 1.6.3: .NET only release with non-compliant REST endpoints

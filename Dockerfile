@@ -1,4 +1,4 @@
-FROM java:7
+FROM java:8
 
 RUN echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf
 

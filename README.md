@@ -99,12 +99,11 @@ The Docker-related configuration files are:
 * start_docker
 * .dockerignore
 * Dockerfile
-* docker/dockerstart
 
 Running Locally
 ---------------
 
-If you have Java 1.7 already installed in your system path, you can run this program using:
+If you have Java 7+ already installed in your system path, you can run this program using:
 
     ./start [parameters]
 
@@ -147,6 +146,11 @@ Issues in 3.1:
 
 * Duplicate connections aren't closed automatically
 * win-bonjour discovery module doesn't start correctly
+
+Building
+--------
+
+Currently the build artifacts are created using IntelliJ.
 
 Distribution
 ----------------

@@ -87,12 +87,11 @@ See other sample projects in `examples`
 Running in Docker
 -----------------
 
-To run this project locally, run the following commands from your Docker terminal:
+To run/build this project in a container, run the following commands from your Docker terminal:
 
     ./start_docker [parameters]
 
-And then visit the URL ```http://docker_url:8765``` where `docker_url` is `localhost` (linux)
-or the docker machine URL (mac)
+And then visit the URL ```http://localhost:8765```.
 
 The Docker-related configuration files are:
 
@@ -100,10 +99,10 @@ The Docker-related configuration files are:
 * .dockerignore
 * Dockerfile
 
-Running Locally
+Running from JAR
 ---------------
 
-If you have Java 7+ already installed in your system path, you can run this program using:
+If you have Java 7+ already installed in your system path, you can run the compiled JAR using:
 
     ./start [parameters]
 
@@ -131,6 +130,10 @@ Parameters:
                               placeholders; default to *
      -t,--timespan <arg>      Search interval for clients in milliseconds
 
+Building Locally
+----------------
+
+Currently the build artifacts are created using IntelliJ.
 
 Related Projects
 ----------------
@@ -142,15 +145,10 @@ into [another repository](https://github.com/rhfung/p2p-dictionary-csharp).
 Known Issues
 ------------
 
-Issues in 3.1:
+Issues in 3.1+:
 
 * Duplicate connections aren't closed automatically
 * win-bonjour discovery module doesn't start correctly
-
-Building
---------
-
-Currently the build artifacts are created using IntelliJ.
 
 Distribution
 ----------------

@@ -4,4 +4,5 @@ echo The running docker container is `p2p-server`
 echo
 docker rm p2p-server
 docker build -t p2pd .
+echo Running on port 127.0.0.1:8765
 docker run --name p2p-server -p 8765:8765 -i -t p2pd "$@"

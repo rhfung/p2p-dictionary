@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/examples/first-example/first-example.iml" filepath="$PROJECT_DIR$/examples/first-example/first-example.iml" />
+      <module fileurl="file://$PROJECT_DIR$/examples/local-file-transfer/local-file-transfer.iml" filepath="$PROJECT_DIR$/examples/local-file-transfer/local-file-transfer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/p2p-dictionary.iml" filepath="$PROJECT_DIR$/.idea/p2p-dictionary.iml" />
+    </modules>
+  </component>
+</project>

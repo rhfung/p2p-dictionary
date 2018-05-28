@@ -24,12 +24,12 @@ public class MainObject {
 
 		dict.addSubscription("*");
 		dict.setDefaultKey("index.html");
-		dict.put("index.html", new MIMEByteObject("text/html", getFileInPackage("/app-index.html")));
-		dict.put("app-index.js", new MIMEByteObject("text/html", getFileInPackage("/app-index.js")));
-		dict.put("backbone.js", new MIMEByteObject("application/javascript", getFileInPackage("/backbone.js")));
-		dict.put("format.css", new MIMEByteObject("text/css", getFileInPackage("/format.css")));
-		dict.put("underscore.js", new MIMEByteObject("application/javascript", getFileInPackage("/underscore.js")));
-		dict.put("jquery-1.7.2.js", new MIMEByteObject("application/javascript", getFileInPackage("/jquery-1.7.2.js")));
+		dict.put("index.html", new com.rhfung.P2PDictionary.MIMEByteObject("text/html", getFileInPackage("/app-index.html")));
+		dict.put("app-index.js", new com.rhfung.P2PDictionary.MIMEByteObject("text/html", getFileInPackage("/app-index.js")));
+		dict.put("backbone.js", new com.rhfung.P2PDictionary.MIMEByteObject("application/javascript", getFileInPackage("/backbone.js")));
+		dict.put("format.css", new com.rhfung.P2PDictionary.MIMEByteObject("text/css", getFileInPackage("/format.css")));
+		dict.put("underscore.js", new com.rhfung.P2PDictionary.MIMEByteObject("application/javascript", getFileInPackage("/underscore.js")));
+		dict.put("jquery-1.7.2.js", new com.rhfung.P2PDictionary.MIMEByteObject("application/javascript", getFileInPackage("/jquery-1.7.2.js")));
 
 		Thread shutdown = new Thread(new Runnable() {
 			@Override

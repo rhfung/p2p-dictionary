@@ -1,0 +1,4 @@
+#!/bin/bash
+CLASSPATH=../../bin/production/p2p-dictionary:../../lib:../../lib/commons-io-2.4.jar:./assets:../../lib/jackson-core-2.0.2.jar:../../lib/commons-fileupload-1.2.2.jar:../../lib/commons-lang3-3.1.jar:../../code/res:./src
+javac -cp $CLASSPATH src/TestRun.java
+java -cp $CLASSPATH TestRun

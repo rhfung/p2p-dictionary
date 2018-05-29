@@ -22,7 +22,7 @@ to key-value pairs. A web interface is provided for web browser access
 to key-value pairs stored on each node. A redistributable package is provided
 using Docker containers with both .NET and Java implementations.
 
-Copyright (C) 2011-2016, Richard H Fung
+Copyright (C) 2011-2018, Richard H Fung
 
 License
 -------
@@ -113,6 +113,11 @@ If you have Java 7+ already installed in your system path, you can run the compi
     ./start [parameters]
 
 By default it runs on ```http://localhost:8765```.
+
+### Building Examples
+
+1. Use IntelliJ to build the main project.
+2. Use the `start` script in each example to compile and run the project.
 
 P2PD CLI Parameters
 ------------------

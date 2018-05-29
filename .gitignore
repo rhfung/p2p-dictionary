@@ -1,3 +1,5 @@
 bin
 *.class
 workspace.xml
+.gradle
+dist/p2p-dictionary-SNAPSHOT.jar

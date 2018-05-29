@@ -1,2 +1,2 @@
 #!/bin/bash
-java -cp ./lib -Djava.net.preferIPv4Stack=true  -jar ./dist/p2p-dictionary-3.2.jar "$@"
+java -Djava.net.preferIPv4Stack=true -cp './lib/*:./dist/p2p-dictionary-SNAPSHOT.jar:.' 'com.rhfung.p2pd.Server' "$@"

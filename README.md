@@ -32,27 +32,23 @@ You agree to the LICENSE before using this Software.
 Basic requirements
 ------------------
 
-* Java SE 8 or higher OR Docker
+This project can be built using Docker or local machine.
+
+## Docker
+* Docker 17.05+
+
+## Local Machine
+* Java SE 8 or higher
+
+* Gradle 3.4
 
 * For Bonjour discovery on Windows:
   * Apple Bonjour Print Services for Windows: http://support.apple.com/kb/DL999
   * DNS_SD.jar from Apple Bonjour (Windows)
   * Windows computer
 
-* For Linux-compatible Bonjour discovery:
-  * jmdns.jar
-
-* Java libraries (in the `lib` directory):
-  * Jackson JSON 2.0 core libraries (annotations, core, databind)
-  * Apache Common libraries (cli, fileupload, io, lang)
-
-Documentation
+Example Usage
 -------------
-
-This library needs a lot of documentation.
-
-Examples
---------
 
 Taken from examples/first-example/TestRun.java:
 
@@ -99,8 +95,18 @@ The Docker-related configuration files are:
 * .dockerignore
 * Dockerfile
 
-Running from JAR
----------------
+The Docker image is built with Gradle to compile the Java source.
+
+Building on Local Machine
+------------------------
+
+Gradle is a modern way to build Java source code.
+1. Ensure `gradle` is installed
+2. Run `gradle build`
+
+This project can also be built using IntelliJ IDEA. Support for IntelliJ will be removed in the future.
+
+## Running JAR
 
 If you have Java 7+ already installed in your system path, you can run the compiled JAR using:
 
@@ -108,10 +114,10 @@ If you have Java 7+ already installed in your system path, you can run the compi
 
 By default it runs on ```http://localhost:8765```.
 
-P2PD Parameters
----------------
+P2PD CLI Parameters
+------------------
 
-Parameters:
+CLI Parameters allowed for the Docker/JAR command line interface:
 
      -d,--discovery <arg>     Backend discovery mechanism: none, bonjour,
                               win-bonjour, hello. Default: hello
@@ -130,10 +136,6 @@ Parameters:
                               placeholders; default to *
      -t,--timespan <arg>      Search interval for clients in milliseconds
 
-Building Locally
-----------------
-
-Currently the build artifacts are created using IntelliJ.
 
 Related Projects
 ----------------
@@ -153,7 +155,7 @@ Issues in 3.1+:
 Distribution
 ----------------
 
-See the `dist` directory. The distribution also requires `lib` jars.
+See the `dist` directory. The distribution also requires `bin/build/lib` jars.
 
 Change Log
 ----------

@@ -1,2 +1,1 @@
-java -cp ./lib -Djava.net.preferIPv4Stack=true  -jar ./dist/p2p-dictionary-3.2.jar %*
-
+java -Djava.net.preferIPv4Stack=true -cp ./dist/p2p-dictionary-SNAPSHOT.jar;./lib/*;. com.rhfung.p2pd.Server %*

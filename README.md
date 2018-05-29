@@ -116,7 +116,7 @@ By default it runs on ```http://localhost:8765```.
 
 ### Building Examples
 
-1. Use IntelliJ to build the main project.
+1. Use `gradle build` to build dependencies.
 2. Use the `start` script in each example to compile and run the project.
 
 P2PD CLI Parameters

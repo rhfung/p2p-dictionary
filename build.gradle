@@ -74,7 +74,7 @@ task copyToLib(type: Copy) {
     from configurations.runtime
 }
 
-assemble.finalizedBy(copyToLib)
+build.finalizedBy(copyToLib)
 
 tasks.withType(Jar) {
     //define directory where the archive is generated into

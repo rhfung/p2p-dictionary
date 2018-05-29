@@ -4,7 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/examples/first-example/first-example.iml" filepath="$PROJECT_DIR$/examples/first-example/first-example.iml" />
       <module fileurl="file://$PROJECT_DIR$/examples/local-file-transfer/local-file-transfer.iml" filepath="$PROJECT_DIR$/examples/local-file-transfer/local-file-transfer.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/p2p-dictionary.iml" filepath="$PROJECT_DIR$/.idea/p2p-dictionary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/p2p-dictionary_main.iml" filepath="$PROJECT_DIR$/.idea/modules/p2p-dictionary_main.iml" group="p2p-dictionary" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/p2p-dictionary_test.iml" filepath="$PROJECT_DIR$/.idea/modules/p2p-dictionary_test.iml" group="p2p-dictionary" />
     </modules>
   </component>
 </project>

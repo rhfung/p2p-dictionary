@@ -1,4 +1,4 @@
 #!/bin/bash
-CLASSPATH=../../bin/production/p2p-dictionary:../../lib/*:./src:./assets:.
+CLASSPATH=../../dist/p2p-dictionary-SNAPSHOT.jar:../../bin/build/lib/*:./src:./assets:.
 javac -cp $CLASSPATH src/MainObject.java
 java -cp $CLASSPATH MainObject

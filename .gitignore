@@ -3,3 +3,4 @@ bin
 workspace.xml
 .gradle
 dist/p2p-dictionary-SNAPSHOT.jar
+.idea/libraries

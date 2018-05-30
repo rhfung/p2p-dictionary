@@ -40,9 +40,14 @@ public class Server {
     public static void main(String[] args) {
         Options options = new Options();
         options.addOption("m", "description", true, "Description for the server");
-        options.addOption("p", "port", true, "Bind to port default:8765");
-        options.addOption("s", "namespace", true, "Namespace for the server");
-        options.addOption("t", "timespan", true, "Search interval for clients in milliseconds");
+        options.addOption("p", "port", true, "Bind to port default: 8765");
+        options.addOption(Option.builder("s")
+                .longOpt( "namespace")
+                .hasArg(true)
+                .desc("[required] Namespace for the server")
+                .required()
+                .build());
+        options.addOption("t", "timespan", true, "Search interval for clients in milliseconds. Default: 5000");
         options.addOption("d", "discovery", true, "Backend discovery mechanism: none, bonjour, win-bonjour, hello. Default: hello");
         options.addOption("h", "help", true, "Show this help");
         options.addOption(Option.builder()

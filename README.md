@@ -165,6 +165,9 @@ See the `dist` directory. The distribution also requires `bin/build/lib` jars.
 Change Log
 ----------
 
+* 3.3:
+  * Lightweight distributable
+  * Changed CLI argument to require namespace
 * 3.2:
   * Update requirement to Java 8
   * Changed CLI arguments to match .NET implementation
